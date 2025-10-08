@@ -1,6 +1,8 @@
 import os
+
 from dotenv import load_dotenv
 from fastapi import FastAPI
+
 from app.api.endpoints import api_router
 
 # Load environment variables
