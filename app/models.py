@@ -1,7 +1,18 @@
 # app/models.py
-from sqlalchemy import Boolean, Column, Float, Integer, String
+from sqlalchemy import Column
+from sqlalchemy import Enum as SAEnum
+from sqlalchemy import Float, Integer
 
 from app.core.database import Base
+from app.enums import (
+    Departement,
+    DomaineEtude,
+    FrequenceDeplacement,
+    Genre,
+    OuiNon,
+    Poste,
+    StatutMarital,
+)
 
 
 class PredictionInput(Base):
@@ -9,46 +20,35 @@ class PredictionInput(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     age = Column(Integer)
-    genre = Column(String)
+    # store string enums as SQLAlchemy Enum for readability
+    genre = Column(SAEnum(Genre), nullable=False)
     revenu_mensuel = Column(Float)
     nombre_experiences_precedentes = Column(Integer)
     annee_experience_totale = Column(Integer)
     annees_dans_l_entreprise = Column(Integer)
     annees_dans_le_poste_actuel = Column(Integer)
-    satisfaction_employee_environnement = Column(Float)
+    # store numeric enums as integers
+    satisfaction_employee_environnement = Column(Integer)
     niveau_hierarchique_poste = Column(Integer)
-    satisfaction_employee_nature_travail = Column(Float)
-    satisfaction_employee_equipe = Column(Float)
-    satisfaction_employee_equilibre_pro_perso = Column(Float)
-    note_evaluation_actuelle = Column(Float)
-    heure_supplementaires = Column(Boolean)
-    augmentation_salaire_precedente = Column(Boolean)
+    satisfaction_employee_nature_travail = Column(Integer)
+    satisfaction_employee_equipe = Column(Integer)
+    satisfaction_employee_equilibre_pro_perso = Column(Integer)
+    note_evaluation_actuelle = Column(Integer)
+    heure_supplementaires = Column(SAEnum(OuiNon))
+    augmentation_salaire_precedente = Column(SAEnum(OuiNon))
     nombre_participation_pee = Column(Integer)
     nb_formations_suivies = Column(Integer)
     distance_domicile_travail = Column(Float)
-    niveau_education = Column(String)
-    frequence_deplacement = Column(String)
+    niveau_education = Column(Integer)
+    frequence_deplacement = Column(SAEnum(FrequenceDeplacement))
     annees_depuis_la_derniere_promotion = Column(Integer)
     annes_sous_responsable_actuel = Column(Integer)
 
-    # Variables catégorielles (dummy variables)
-    departement_Consulting = Column(Boolean)
-    departement_RH = Column(Boolean)
-    statut_marital_Divorce = Column(Boolean)
-    statut_marital_Marie = Column(Boolean)
-    poste_Cadre_Commercial = Column(Boolean)
-    poste_Consultant = Column(Boolean)
-    poste_Directeur_Technique = Column(Boolean)
-    poste_Manager = Column(Boolean)
-    poste_Representant_Commercial = Column(Boolean)
-    poste_RH = Column(Boolean)
-    poste_Senior_Manager = Column(Boolean)
-    poste_Tech_Lead = Column(Boolean)
-    domaine_etude_Entrepreunariat = Column(Boolean)
-    domaine_etude_Infra_Cloud = Column(Boolean)
-    domaine_etude_Marketing = Column(Boolean)
-    domaine_etude_RH = Column(Boolean)
-    domaine_etude_Transformation_Digitale = Column(Boolean)
+    # Variables catégorielles
+    departement = Column(SAEnum(Departement))
+    statut_marital = Column(SAEnum(StatutMarital))
+    poste = Column(SAEnum(Poste))
+    domaine_etude = Column(SAEnum(DomaineEtude))
 
     # Variables dérivées
     mobilite_interne_ratio = Column(Float)
