@@ -172,3 +172,6 @@ Thumbs.db
 
 # FastAPI specific
 .pytest_cache/
+
+# Ignore model binaries
+app/ml/*.pkl

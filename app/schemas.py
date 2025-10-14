@@ -33,7 +33,7 @@ class PredictionInputBase(BaseModel):
     satisfaction_employee_equilibre_pro_perso: SatisfactionEmployee
     note_evaluation_actuelle: NoteEvaluation
     heure_supplementaires: OuiNon
-    augmentation_salaire_precedente: OuiNon
+    augmentation_salaire_precedente: float
     nombre_participation_pee: int
     nb_formations_suivies: int
     distance_domicile_travail: float
