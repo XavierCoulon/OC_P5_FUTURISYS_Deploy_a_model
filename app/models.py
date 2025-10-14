@@ -35,7 +35,7 @@ class PredictionInput(Base):
     satisfaction_employee_equilibre_pro_perso = Column(Integer)
     note_evaluation_actuelle = Column(Integer)
     heure_supplementaires = Column(SAEnum(OuiNon))
-    augmentation_salaire_precedente = Column(SAEnum(OuiNon))
+    augmentation_salaire_precedente = Column(Float)
     nombre_participation_pee = Column(Integer)
     nb_formations_suivies = Column(Integer)
     distance_domicile_travail = Column(Float)

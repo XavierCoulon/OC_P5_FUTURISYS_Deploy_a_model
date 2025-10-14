@@ -12,12 +12,6 @@ from sqlalchemy.orm import Session
 from app.models import PredictionInput
 from app.schemas import PredictionInputCreate
 
-# Exemple : liste des colonnes binaires à encoder
-BINARY_FIELDS = [
-    "heure_supplementaires",
-    "augmentation_salaire_precedente",
-]
-
 
 def create_prediction_input(
     db: Session, data: PredictionInputCreate

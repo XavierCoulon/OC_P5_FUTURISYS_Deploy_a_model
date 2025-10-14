@@ -8,8 +8,8 @@ class FrequenceDeplacement(str, Enum):
 
 
 class Genre(str, Enum):
-    homme = "Homme"
-    femme = "Femme"
+    homme = "H"
+    femme = "F"
 
 
 class StatutMarital(str, Enum):

@@ -1,9 +1,11 @@
 from datetime import datetime
 
+import pandas as pd
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.ml.model_loader import model  # Import the loaded model
 from app.models import PredictionInput
 from app.schemas import PredictionInputCreate, PredictionInputResponse
 from app.services import create_prediction_input, get_prediction_inputs
@@ -30,8 +32,27 @@ def create_prediction(
     (Étape avant prédiction)
     """
 
-    result = create_prediction_input(db, prediction_data)
-    return result
+    # Sauvegarde des données d'entrée dans la base de données
+    db_input = create_prediction_input(db, prediction_data)
+
+    data_dict = prediction_data.model_dump()  # Convertir en dictionnaire
+    df = pd.DataFrame([data_dict])
+    print("Données reçues pour la prédiction :", df)
+
+    # Probabilité d'appartenance à la classe 1
+    y_proba = model.predict_proba(df)[:, 1]
+
+    # Application du seuil choisi (par ex. celui trouvé plus tôt)
+    THRESHOLD = 0.35  # à adapter selon ton calcul métier
+
+    # Conversion en prédiction binaire selon le seuil
+    y_pred = (y_proba >= THRESHOLD).astype(int)
+
+    print(
+        f"🔮 Prédiction: {y_pred[0]}, Probabilité: {y_proba[0]: .3f}, Seuil utilisé: {THRESHOLD}"
+    )
+
+    return db_input
 
 
 @api_router.get("/predictions", response_model=list[PredictionInputResponse])

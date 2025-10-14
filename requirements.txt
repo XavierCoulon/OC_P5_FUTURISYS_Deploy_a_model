@@ -21,6 +21,7 @@ httptools==0.6.4
 httpx==0.28.1
 identify==2.6.15
 idna==3.10
+imbalanced-learn==0.14.0
 iniconfig==2.1.0
 isort==6.1.0
 Jinja2==3.1.6
@@ -32,7 +33,6 @@ mdurl==0.1.2
 mypy_extensions==1.1.0
 nodeenv==1.9.1
 numpy==2.3.3
-oc-p4-encoders @ git+https://github.com/XavierCoulon/OC_P4_encoders.git@569a9a62748515f9dd116aee18427ab759d41e5a
 packaging==25.0
 pandas==2.3.3
 pathspec==0.12.1
