@@ -72,6 +72,33 @@ class PredictionInputResponse(PredictionInputBase):
         orm_mode = True  # 👈 permet de lire les objets SQLAlchemy
 
 
+class PredictionOutputBase(BaseModel):
+    prediction: int
+    probability: float
+    threshold: float
+
+    class Config:
+        orm_mode = True
+
+
+class PredictionOutputCreate(PredictionOutputBase):
+    """Schéma pour créer un enregistrement de sortie"""
+
+    prediction_input_id: int
+
+
+class PredictionOutputResponse(PredictionOutputBase):
+    """Schéma de sortie complet (inclut la clé étrangère)"""
+
+    id: int
+    prediction_input_id: int
+
+
+class PredictionFullResponse(BaseModel):
+    input: PredictionInputResponse
+    output: PredictionOutputResponse
+
+
 class HealthResponse(BaseModel):
     """Schema for health check responses"""
 

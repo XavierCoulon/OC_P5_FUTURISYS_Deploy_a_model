@@ -9,8 +9,8 @@ from enum import Enum
 # )
 from sqlalchemy.orm import Session
 
-from app.models import PredictionInput
-from app.schemas import PredictionInputCreate
+from app.models import PredictionInput, PredictionOutput
+from app.schemas import PredictionInputCreate, PredictionOutputCreate
 
 
 def create_prediction_input(
@@ -38,3 +38,23 @@ def get_prediction_inputs(db: Session, skip: int = 0, limit: int = 10):
     Retourne la liste des entrées enregistrées.
     """
     return db.query(PredictionInput).offset(skip).limit(limit).all()
+
+
+def create_prediction_output(
+    db: Session, data: PredictionOutputCreate
+) -> PredictionOutput:
+    """
+    Crée un nouvel enregistrement de sortie de prédiction.
+    """
+    db_output = PredictionOutput(**data.model_dump())
+    db.add(db_output)
+    db.commit()
+    db.refresh(db_output)
+    return db_output
+
+
+def get_prediction_outputs(db: Session, skip: int = 0, limit: int = 10):
+    """
+    Retourne la liste des sorties enregistrées.
+    """
+    return db.query(PredictionOutput).offset(skip).limit(limit).all()

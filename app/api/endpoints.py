@@ -8,8 +8,17 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from app.ml.model_loader import model  # Import the loaded model
 from app.models import PredictionInput
-from app.schemas import PredictionInputCreate, PredictionInputResponse
-from app.services import create_prediction_input, get_prediction_inputs
+from app.schemas import (
+    PredictionFullResponse,
+    PredictionInputCreate,
+    PredictionInputResponse,
+    PredictionOutputCreate,
+)
+from app.services import (
+    create_prediction_input,
+    create_prediction_output,
+    get_prediction_inputs,
+)
 
 api_router = APIRouter()
 
@@ -24,7 +33,7 @@ async def health_check():
     return {"status": "healthy", "timestamp": datetime.now()}
 
 
-@api_router.post("/predictions", response_model=PredictionInputResponse)
+@api_router.post("/predictions", response_model=PredictionFullResponse)
 def create_prediction(
     prediction_data: PredictionInputCreate, db: Session = Depends(get_db)
 ):
@@ -50,11 +59,21 @@ def create_prediction(
     # Conversion en prédiction binaire selon le seuil
     y_pred = (y_proba >= THRESHOLD).astype(int)
 
-    print(
-        f"🔮 Prédiction: {y_pred[0]}, Probabilité: {y_proba[0]: .3f}, Seuil utilisé: {THRESHOLD}"
+    # Sauvegarde des résultats de prédiction
+    db_output = create_prediction_output(
+        db,
+        PredictionOutputCreate(
+            prediction_input_id=getattr(db_input, "id"),
+            prediction=y_pred[0],
+            probability=y_proba[0],
+            threshold=THRESHOLD,
+        ),
     )
 
-    return db_input
+    return {
+        "input": db_input,
+        "output": db_output,
+    }
 
 
 @api_router.get("/predictions", response_model=list[PredictionInputResponse])

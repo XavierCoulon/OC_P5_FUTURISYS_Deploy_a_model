@@ -1,7 +1,8 @@
 # app/models.py
 from sqlalchemy import Column
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy import Float, Integer
+from sqlalchemy import Float, ForeignKey, Integer
+from sqlalchemy.orm import relationship
 
 from app.core.database import Base
 from app.enums import (
@@ -54,3 +55,27 @@ class PredictionInput(Base):
     mobilite_interne_ratio = Column(Float)
     ratio_anciennete = Column(Float)
     delta_evaluation = Column(Float)
+
+    # Relation 1:N avec PredictionOutput
+    prediction_outputs = relationship(
+        "PredictionOutput",
+        back_populates="prediction_input",
+        cascade="all, delete-orphan",
+    )
+
+
+class PredictionOutput(Base):
+    __tablename__ = "prediction_outputs"
+
+    id = Column(Integer, primary_key=True, index=True)
+    prediction_input_id = Column(
+        Integer, ForeignKey("prediction_inputs.id", ondelete="CASCADE"), nullable=False
+    )
+    prediction = Column(Integer, nullable=False)
+    probability = Column(Float, nullable=False)
+    threshold = Column(Float, nullable=False)
+
+    # Relation vers PredictionInput
+    prediction_input = relationship(
+        "PredictionInput", back_populates="prediction_outputs"
+    )
