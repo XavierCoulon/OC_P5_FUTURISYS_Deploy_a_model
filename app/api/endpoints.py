@@ -1,5 +1,6 @@
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
@@ -40,7 +41,8 @@ def create_prediction(
     print("Données reçues pour la prédiction :", df)
 
     # Probabilité d'appartenance à la classe 1
-    y_proba = model.predict_proba(df)[:, 1]
+    y_proba_raw = model.predict_proba(df)
+    y_proba = np.array(y_proba_raw)[:, 1]
 
     # Application du seuil choisi (par ex. celui trouvé plus tôt)
     THRESHOLD = 0.35  # à adapter selon ton calcul métier
