@@ -2,10 +2,11 @@ from datetime import datetime
 
 import numpy as np
 import pandas as pd
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
+from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
-from app.core.database import get_db
+from app.core.database import engine, get_db
 from app.ml.model_loader import model  # Import the loaded model
 from app.models import PredictionInput
 from app.schemas import (
@@ -31,6 +32,33 @@ async def root():
 @api_router.get("/health")
 async def health_check():
     return {"status": "healthy", "timestamp": datetime.now()}
+
+
+@api_router.get("/erd", response_class=Response)
+def get_erd_mermaid():
+    inspector = inspect(engine)
+    tables = inspector.get_table_names()
+
+    lines = ["```mermaid", "erDiagram"]
+
+    for table in tables:
+        lines.append(f"    {table} {{")
+        for column in inspector.get_columns(table):
+            col_type = str(column["type"])
+            col_name = column["name"]
+            lines.append(f"        {col_type} {col_name}")
+        lines.append("    }")
+
+    for table in tables:
+        for fk in inspector.get_foreign_keys(table):
+            referred = fk.get("referred_table")
+            if referred:
+                rel_name = fk.get("name", "fk")
+                edge_line = "    " + table + "}o--||" + referred + " :" + rel_name  # type: ignore
+                lines.append(edge_line)
+
+    lines.append("```")
+    return Response("\n".join(lines), media_type="text/markdown")
 
 
 @api_router.post("/predictions", response_model=PredictionFullResponse)
