@@ -17,6 +17,53 @@ A simple FastAPI application for ML model deployment with environment variable s
 -   🐍 **Pyenv Environment** - Isolated Python environment management
 -   � **RESTful API** - Clean API structure with proper HTTP methods
 
+
+## ERD
+
+```mermaid
+erDiagram
+    prediction_inputs {
+        INTEGER id
+        INTEGER age
+        VARCHAR(5) genre
+        DOUBLE PRECISION revenu_mensuel
+        INTEGER nombre_experiences_precedentes
+        INTEGER annee_experience_totale
+        INTEGER annees_dans_l_entreprise
+        INTEGER annees_dans_le_poste_actuel
+        INTEGER satisfaction_employee_environnement
+        INTEGER niveau_hierarchique_poste
+        INTEGER satisfaction_employee_nature_travail
+        INTEGER satisfaction_employee_equipe
+        INTEGER satisfaction_employee_equilibre_pro_perso
+        INTEGER note_evaluation_actuelle
+        VARCHAR(3) heure_supplementaires
+        DOUBLE PRECISION augmentation_salaire_precedente
+        INTEGER nombre_participation_pee
+        INTEGER nb_formations_suivies
+        DOUBLE PRECISION distance_domicile_travail
+        INTEGER niveau_education
+        VARCHAR(11) frequence_deplacement
+        INTEGER annees_depuis_la_derniere_promotion
+        INTEGER annes_sous_responsable_actuel
+        VARCHAR(10) departement
+        VARCHAR(11) statut_marital
+        VARCHAR(23) poste
+        VARCHAR(23) domaine_etude
+        DOUBLE PRECISION mobilite_interne_ratio
+        DOUBLE PRECISION ratio_anciennete
+        DOUBLE PRECISION delta_evaluation
+    }
+    prediction_outputs {
+        INTEGER id
+        INTEGER prediction_input_id
+        INTEGER prediction
+        DOUBLE PRECISION probability
+        DOUBLE PRECISION threshold
+    }
+    prediction_outputs }o--|| prediction_inputs : prediction_outputs_prediction_input_id_fkey
+```
+
 ## Project Structure
 
 ```
