@@ -1,7 +1,7 @@
 # app/models.py
-from sqlalchemy import Column
+from sqlalchemy import Column, DateTime
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy import Float, ForeignKey, Integer
+from sqlalchemy import Float, ForeignKey, Integer, func
 from sqlalchemy.orm import relationship
 
 from app.core.database import Base
@@ -21,14 +21,12 @@ class PredictionInput(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     age = Column(Integer)
-    # store string enums as SQLAlchemy Enum for readability
     genre = Column(SAEnum(Genre), nullable=False)
     revenu_mensuel = Column(Float)
     nombre_experiences_precedentes = Column(Integer)
     annee_experience_totale = Column(Integer)
     annees_dans_l_entreprise = Column(Integer)
     annees_dans_le_poste_actuel = Column(Integer)
-    # store numeric enums as integers
     satisfaction_employee_environnement = Column(Integer)
     niveau_hierarchique_poste = Column(Integer)
     satisfaction_employee_nature_travail = Column(Integer)
@@ -44,17 +42,16 @@ class PredictionInput(Base):
     frequence_deplacement = Column(SAEnum(FrequenceDeplacement))
     annees_depuis_la_derniere_promotion = Column(Integer)
     annes_sous_responsable_actuel = Column(Integer)
-
-    # Variables catégorielles
     departement = Column(SAEnum(Departement))
     statut_marital = Column(SAEnum(StatutMarital))
     poste = Column(SAEnum(Poste))
     domaine_etude = Column(SAEnum(DomaineEtude))
-
-    # Variables dérivées
     mobilite_interne_ratio = Column(Float)
     ratio_anciennete = Column(Float)
     delta_evaluation = Column(Float)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     # Relation 1:N avec PredictionOutput
     prediction_outputs = relationship(
@@ -74,6 +71,9 @@ class PredictionOutput(Base):
     prediction = Column(Integer, nullable=False)
     probability = Column(Float, nullable=False)
     threshold = Column(Float, nullable=False)
+    created_at = Column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     # Relation vers PredictionInput
     prediction_input = relationship(

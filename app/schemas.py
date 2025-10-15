@@ -41,14 +41,10 @@ class PredictionInputBase(BaseModel):
     frequence_deplacement: FrequenceDeplacement
     annees_depuis_la_derniere_promotion: int
     annes_sous_responsable_actuel: int
-
-    # Variables catégorielles
     departement: Departement
     statut_marital: StatutMarital
     poste: Poste
     domaine_etude: DomaineEtude
-
-    # Variables dérivées
     mobilite_interne_ratio: float
     ratio_anciennete: float
     delta_evaluation: float
@@ -67,6 +63,7 @@ class PredictionInputResponse(PredictionInputBase):
     """Schéma utilisé pour les retours (GET / prédiction)"""
 
     id: int
+    created_at: datetime
 
     class Config:
         orm_mode = True  # 👈 permet de lire les objets SQLAlchemy
@@ -92,6 +89,7 @@ class PredictionOutputResponse(PredictionOutputBase):
 
     id: int
     prediction_input_id: int
+    created_at: datetime
 
 
 class PredictionFullResponse(BaseModel):
