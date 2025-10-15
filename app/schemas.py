@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 from app.enums import (
     Departement,
@@ -19,35 +19,202 @@ from app.enums import (
 
 
 class PredictionInputBase(BaseModel):
-    age: int
-    genre: Genre
-    revenu_mensuel: float
-    nombre_experiences_precedentes: int
-    annee_experience_totale: int
-    annees_dans_l_entreprise: int
-    annees_dans_le_poste_actuel: int
-    satisfaction_employee_environnement: SatisfactionEmployee
-    niveau_hierarchique_poste: NiveauHierarchiquePoste
-    satisfaction_employee_nature_travail: SatisfactionEmployee
-    satisfaction_employee_equipe: SatisfactionEmployee
-    satisfaction_employee_equilibre_pro_perso: SatisfactionEmployee
-    note_evaluation_actuelle: NoteEvaluation
-    heure_supplementaires: OuiNon
-    augmentation_salaire_precedente: float
-    nombre_participation_pee: int
-    nb_formations_suivies: int
-    distance_domicile_travail: float
-    niveau_education: NiveauEducation
-    frequence_deplacement: FrequenceDeplacement
-    annees_depuis_la_derniere_promotion: int
-    annes_sous_responsable_actuel: int
-    departement: Departement
-    statut_marital: StatutMarital
-    poste: Poste
-    domaine_etude: DomaineEtude
-    mobilite_interne_ratio: float
-    ratio_anciennete: float
-    delta_evaluation: float
+    age: int = Field(
+        ...,
+        description="Âge de l’employé",
+        examples=[35],
+        ge=18,
+        le=70,
+    )
+    genre: Genre = Field(
+        ...,
+        description="Genre de l’employé",
+        examples=["M"],  # Enum: "M", "F"
+    )
+    revenu_mensuel: float = Field(
+        ...,
+        description="Revenu mensuel en euros",
+        examples=[3200.50],
+    )
+    nombre_experiences_precedentes: int = Field(
+        ...,
+        description="Nombre d’expériences professionnelles précédentes",
+        examples=[3],
+    )
+    annee_experience_totale: int = Field(
+        ...,
+        description="Années d’expérience totale",
+        examples=[10],
+    )
+    annees_dans_l_entreprise: int = Field(
+        ...,
+        description="Ancienneté dans l’entreprise (en années)",
+        examples=[5],
+    )
+    annees_dans_le_poste_actuel: int = Field(
+        ...,
+        description="Nombre d’années dans le poste actuel",
+        examples=[3],
+    )
+    satisfaction_employee_environnement: SatisfactionEmployee = Field(
+        ...,
+        description="Satisfaction de l’environnement de travail (0–5)",
+        examples=[4],
+    )
+    niveau_hierarchique_poste: NiveauHierarchiquePoste = Field(
+        ...,
+        description="Niveau hiérarchique du poste (1–5)",
+        examples=[3],
+    )
+    satisfaction_employee_nature_travail: SatisfactionEmployee = Field(
+        ...,
+        description="Satisfaction concernant la nature du travail (0–5)",
+        examples=[5],
+    )
+    satisfaction_employee_equipe: SatisfactionEmployee = Field(
+        ...,
+        description="Satisfaction vis-à-vis de l’équipe (0–5)",
+        examples=[4],
+    )
+    satisfaction_employee_equilibre_pro_perso: SatisfactionEmployee = Field(
+        ...,
+        description="Satisfaction de l’équilibre vie pro/perso (0–5)",
+        examples=[3],
+    )
+    note_evaluation_actuelle: NoteEvaluation = Field(
+        ...,
+        description="Note de la dernière évaluation (0–5)",
+        examples=[4],
+    )
+    heure_supplementaires: OuiNon = Field(
+        ...,
+        description="Effectue des heures supplémentaires",
+        examples=["Oui"],  # Enum: "Oui", "Non"
+    )
+    augmentation_salaire_precedente: float = Field(
+        ...,
+        description="Dernière augmentation de salaire (en %)",
+        examples=[3.5],
+    )
+    nombre_participation_pee: int = Field(
+        ...,
+        description="Nombre de participations au plan d’épargne entreprise",
+        examples=[2],
+    )
+    nb_formations_suivies: int = Field(
+        ...,
+        description="Nombre de formations suivies",
+        examples=[5],
+    )
+    distance_domicile_travail: float = Field(
+        ...,
+        description="Distance domicile–travail (km)",
+        examples=[12.3],
+    )
+    niveau_education: NiveauEducation = Field(
+        ...,
+        description="Niveau d’éducation (1–5)",
+        examples=[4],
+    )
+    frequence_deplacement: FrequenceDeplacement = Field(
+        ...,
+        description="Fréquence des déplacements",
+        examples=["Occasionnel"],  # Enum: "Aucun", "Occasionnel", "Frequent"
+    )
+    annees_depuis_la_derniere_promotion: int = Field(
+        ...,
+        description="Années depuis la dernière promotion",
+        examples=[2],
+    )
+    annes_sous_responsable_actuel: int = Field(
+        ...,
+        description="Années sous le responsable actuel",
+        examples=[3],
+    )
+    departement: Departement = Field(
+        ...,
+        description="Département d’affectation",
+        examples=[
+            "Consulting"
+        ],  # Enum: "Consulting", "Commercial", "Ressources Humaines"
+    )
+    statut_marital: StatutMarital = Field(
+        ...,
+        description="Statut marital",
+        examples=["Marié(e)"],
+    )
+    poste: Poste = Field(
+        ...,
+        description="Poste actuel",
+        examples=["Consultant"],
+    )
+    domaine_etude: DomaineEtude = Field(
+        ...,
+        description="Domaine d’étude ou de formation principal",
+        examples=["Infra & Cloud"],
+    )
+    mobilite_interne_ratio: float = Field(
+        ...,
+        description="Ratio de mobilité interne (fréquence de changements internes)",
+        examples=[0.2],
+    )
+    ratio_anciennete: float = Field(
+        ...,
+        description="Ratio ancienneté / expérience totale",
+        examples=[0.5],
+    )
+    delta_evaluation: float = Field(
+        ...,
+        description="Écart entre la note actuelle et la moyenne des notes précédentes",
+        examples=[-0.3],
+    )
+
+    @model_validator(mode="after")
+    def check_coherence_globale(self):
+        """
+        Valide la cohérence logique entre plusieurs champs :
+        - Les années dans le poste et dans l’entreprise ne peuvent pas dépasser l’expérience totale.
+        - L’expérience totale ne peut pas être inférieure à ces valeurs.
+        - Le ratio de mobilité interne doit être compris entre 0 et 1.
+        """
+
+        # --- Vérifications sur les années ---
+        if (
+            self.annee_experience_totale is not None
+            and self.annees_dans_le_poste_actuel is not None
+            and self.annees_dans_le_poste_actuel > self.annee_experience_totale
+        ):
+            raise ValueError(
+                "Le nombre d’années dans le poste actuel ne peut pas dépasser l’expérience totale."
+            )
+
+        if (
+            self.annee_experience_totale is not None
+            and self.annees_dans_l_entreprise is not None
+            and self.annees_dans_l_entreprise > self.annee_experience_totale
+        ):
+            raise ValueError(
+                "L’ancienneté dans l’entreprise ne peut pas dépasser l’expérience totale."
+            )
+
+        if (
+            self.annee_experience_totale is not None
+            and self.annees_dans_l_entreprise is not None
+            and self.annee_experience_totale < self.annees_dans_l_entreprise
+        ):
+            raise ValueError(
+                "L’expérience totale ne peut pas être inférieure à l’ancienneté dans l’entreprise."
+            )
+
+        # --- Vérification sur la mobilité ---
+        if self.mobilite_interne_ratio is not None and not (
+            0 <= self.mobilite_interne_ratio <= 1
+        ):
+            raise ValueError(
+                "Le ratio de mobilité interne doit être compris entre 0 et 1."
+            )
+
+        return self
 
     class Config:
         orm_mode = True
@@ -62,17 +229,37 @@ class PredictionInputCreate(PredictionInputBase):
 class PredictionInputResponse(PredictionInputBase):
     """Schéma utilisé pour les retours (GET / prédiction)"""
 
-    id: int
-    created_at: datetime
+    id: int = Field(
+        ...,
+        description="Identifiant unique de l’entrée",
+        examples=[101],
+    )
+    created_at: datetime = Field(
+        ...,
+        description="Date et heure de création automatique (UTC, ISO 8601)",
+        examples=["2025-10-15T18:53:48.259Z"],
+    )
 
     class Config:
         orm_mode = True  # 👈 permet de lire les objets SQLAlchemy
 
 
 class PredictionOutputBase(BaseModel):
-    prediction: int
-    probability: float
-    threshold: float
+    prediction: int = Field(
+        ...,
+        description="Résultat brut (0 = reste, 1 = quitte l’entreprise)",
+        examples=[1],
+    )
+    probability: float = Field(
+        ...,
+        description="Probabilité associée (0–1)",
+        examples=[0.78],
+    )
+    threshold: float = Field(
+        ...,
+        description="Seuil de décision utilisé pour la classification",
+        examples=[0.5],
+    )
 
     class Config:
         orm_mode = True
