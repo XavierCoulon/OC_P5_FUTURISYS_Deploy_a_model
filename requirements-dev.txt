@@ -8,3 +8,4 @@ pytest-asyncio==1.2.0
 pytest-cov==7.0.0
 httpx==0.28.1
 coverage==7.10.7
+debugpy==1.8.17

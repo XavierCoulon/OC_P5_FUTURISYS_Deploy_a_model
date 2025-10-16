@@ -217,7 +217,7 @@ class PredictionInputBase(BaseModel):
         return self
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PredictionInputCreate(PredictionInputBase):
@@ -241,7 +241,7 @@ class PredictionInputResponse(PredictionInputBase):
     )
 
     class Config:
-        orm_mode = True  # 👈 permet de lire les objets SQLAlchemy
+        from_attributes = True  # 👈 permet de lire les objets SQLAlchemy
 
 
 class PredictionOutputBase(BaseModel):
@@ -262,7 +262,7 @@ class PredictionOutputBase(BaseModel):
     )
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class PredictionOutputCreate(PredictionOutputBase):
