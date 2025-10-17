@@ -1,25 +1,17 @@
 from datetime import datetime
 
-import numpy as np
-import pandas as pd
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 from app.core.database import engine, get_db
-from app.ml.model_loader import model  # Import the loaded model
 from app.models import PredictionInput
 from app.schemas import (
     PredictionFullResponse,
     PredictionInputCreate,
     PredictionInputResponse,
-    PredictionOutputCreate,
 )
-from app.services import (
-    create_prediction_input,
-    create_prediction_output,
-    get_prediction_inputs,
-)
+from app.services import create_prediction_full_service, get_prediction_inputs
 
 api_router = APIRouter(
     prefix="",
@@ -101,45 +93,10 @@ def get_erd_mermaid():
     status_code=status.HTTP_201_CREATED,
 )
 def create_prediction(
-    prediction_data: PredictionInputCreate, db: Session = Depends(get_db)
+    payload: PredictionInputCreate,
+    db: Session = Depends(get_db),
 ):
-    """
-    Crée un nouvel enregistrement et le stocke en base.
-    (Étape avant prédiction)
-    """
-
-    # Sauvegarde des données d'entrée dans la base de données
-    db_input = create_prediction_input(db, prediction_data)
-
-    data_dict = prediction_data.model_dump()  # Convertir en dictionnaire
-    df = pd.DataFrame([data_dict])
-    print("Données reçues pour la prédiction :", df)
-
-    # Probabilité d'appartenance à la classe 1
-    y_proba_raw = model.predict_proba(df)
-    y_proba = np.array(y_proba_raw)[:, 1]
-
-    # Application du seuil choisi (par ex. celui trouvé plus tôt)
-    THRESHOLD = 0.35  # à adapter selon ton calcul métier
-
-    # Conversion en prédiction binaire selon le seuil
-    y_pred = (y_proba >= THRESHOLD).astype(int)
-
-    # Sauvegarde des résultats de prédiction
-    db_output = create_prediction_output(
-        db,
-        PredictionOutputCreate(
-            prediction_input_id=getattr(db_input, "id"),
-            prediction=y_pred[0],
-            probability=y_proba[0],
-            threshold=THRESHOLD,
-        ),
-    )
-
-    return {
-        "input": db_input,
-        "output": db_output,
-    }
+    return create_prediction_full_service(db, payload)
 
 
 @api_router.get(
