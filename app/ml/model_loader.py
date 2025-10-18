@@ -9,7 +9,12 @@ MODEL_PATH = Path(__file__).resolve().parent / "random_forest_pipeline.pkl"
 # Nom du dépôt et fichier sur Hugging Face
 HF_REPO_ID = "XavierCoulon/futurisys-model"
 HF_FILENAME = "random_forest_pipeline.pkl"
-HF_DIRECTORY = Path("/app/.cache")
+if os.environ.get("GITHUB_ACTIONS") == "true":
+    # En CI GitHub → dossier temporaire accessible
+    HF_DIRECTORY = Path("/tmp/.cache")
+else:
+    # En local / Docker Hugging Face
+    HF_DIRECTORY = Path("/app/.cache")
 
 logging.basicConfig(
     level=logging.INFO,
