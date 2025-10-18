@@ -1,3 +1,16 @@
+
+---
+title: Futurisys
+emoji: 🧠
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+sdk_version: "1.0"
+app_file: app.py
+pinned: false
+---
+
+
 # OC## Features
 
 -   🚀 **FastAPI** - Modern, fast web framework for building APIs
