@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 
 import joblib
@@ -8,6 +9,7 @@ MODEL_PATH = Path(__file__).resolve().parent / "random_forest_pipeline.pkl"
 # Nom du dépôt et fichier sur Hugging Face
 HF_REPO_ID = "XavierCoulon/futurisys-model"
 HF_FILENAME = "random_forest_pipeline.pkl"
+HF_DIRECTORY = Path("/app/.cache")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -27,9 +29,12 @@ def load_model():
             logging.error(f"❌ Échec du chargement local : {e}")
     logging.info("🌐 Téléchargement du modèle depuis Hugging Face...")
     try:
+        os.makedirs(HF_DIRECTORY, exist_ok=True)
         model_path = hf_hub_download(
             repo_id=HF_REPO_ID,
             filename=HF_FILENAME,
+            cache_dir=HF_DIRECTORY,
+            force_download=True,
         )
         model = joblib.load(model_path)
         logging.info("✅ Modèle téléchargé et chargé depuis Hugging Face.")
