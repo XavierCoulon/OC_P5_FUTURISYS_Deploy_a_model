@@ -1,6 +1,7 @@
 # app/ui.py
 import gradio as gr
 
+from app.core.database import SessionLocal
 from app.enums import (
     Departement,
     DomaineEtude,
@@ -16,7 +17,6 @@ from app.enums import (
 )
 from app.schemas import PredictionInputCreate
 from app.services import create_prediction_full_service
-from build.lib.app.core.database import SessionLocal
 
 # === Ordre des features ===
 FEATURE_ORDER = [
