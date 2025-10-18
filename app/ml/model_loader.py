@@ -9,7 +9,7 @@ MODEL_PATH = Path(__file__).resolve().parent / "random_forest_pipeline.pkl"
 # Nom du dépôt et fichier sur Hugging Face
 HF_REPO_ID = "XavierCoulon/futurisys-model"
 HF_FILENAME = "random_forest_pipeline.pkl"
-HF_DIRECTORY = Path(os.getenv("HF_CACHE_DIR", "/tmp/.cache"))
+HF_DIRECTORY = Path(__file__).resolve().parent / ".cache"
 os.makedirs(HF_DIRECTORY, exist_ok=True)
 
 logging.basicConfig(
