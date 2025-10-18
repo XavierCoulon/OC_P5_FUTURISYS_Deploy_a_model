@@ -30,7 +30,7 @@ app.include_router(api_router, prefix="/v1")
 
 # Montage de Gradio sur /ui
 demo = build_interface()
-app = mount_gradio_app(app, demo, path="/ui")
+app = mount_gradio_app(app, demo, path="/")
 
 
 if __name__ == "__main__":
