@@ -18,5 +18,5 @@ EXPOSE 7860
 ENV PORT=7860
 ENV ENVIRONMENT=production
 
-# Lancer Uvicorn avec auto-reload (utile en dev)
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "7860", "--reload"]
+# Lancer init DB (idempotent) puis Uvicorn SANS reload
+CMD ["bash", "-lc", "python create_db.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]
