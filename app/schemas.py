@@ -215,6 +215,18 @@ class PredictionInputBase(BaseModel):
                 "Le ratio de mobilité interne doit être compris entre 0 et 1."
             )
 
+        # --- Vérification sur le ratio d'ancienneté ---
+        if self.ratio_anciennete is not None and (
+            self.ratio_anciennete < 0 or self.ratio_anciennete > 1
+        ):
+            raise ValueError("Le ratio d’ancienneté doit être compris entre 0 et 1.")
+
+        # --- Vérification sur l'écart d'évaluation ---
+        if self.delta_evaluation is not None and (
+            self.delta_evaluation < -5 or self.delta_evaluation > 5
+        ):
+            raise ValueError("L’écart d’évaluation doit être compris entre -5 et 5.")
+
         return self
 
     class Config:
