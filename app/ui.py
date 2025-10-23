@@ -1,5 +1,9 @@
+# flake8: noqa=E225
 # app/ui.py
+import os
+
 import gradio as gr
+from gradio import themes
 
 from app.core.database import SessionLocal
 from app.enums import (
@@ -100,6 +104,8 @@ def predict_from_ui(**kwargs):
 def build_interface() -> gr.Interface:
     inputs = []
 
+    version = os.getenv("API_VERSION", "dev")
+
     for feature in FEATURE_ORDER:
         if feature in CHOICES:
             inputs.append(gr.Dropdown(choices=CHOICES[feature], label=feature))
@@ -130,13 +136,24 @@ def build_interface() -> gr.Interface:
         data = dict(zip(FEATURE_ORDER, args))
         return predict_from_ui(**data)
 
+    theme = themes.Ocean(
+        primary_hue="emerald",
+        secondary_hue="sky",
+        neutral_hue="zinc",
+    )
+
     demo = gr.Interface(
         fn=predict_fn,
         inputs=inputs,
         outputs=outputs,
-        title="Futurisys – Prédiction de départ d’un employé",
+        title=f"Futurisys – Prédiction de départ d’un employé (v{version})",
         description="Entrez les caractéristiques d’un employé pour estimer la probabilité de départ.",
+        theme=theme,
         allow_flagging="never",
+        css="""
+        footer { visibility: hidden; }
+        #component-0 { margin-bottom: 1rem; }
+        """,
     )
 
     return demo
