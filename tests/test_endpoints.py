@@ -10,4 +10,7 @@ async def test_root_router(async_client):
     resp = await async_client.get("/")
 
     assert resp.status_code == 200
-    assert resp.json() == {"message": "Welcome to Futurisys ML API"}
+    assert resp.json() == {
+        "message": "Welcome to Futurisys ML API",
+        "api_version": "dev",
+    }

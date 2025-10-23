@@ -46,6 +46,7 @@ jobs:
             DEBUG=False
             SECRET_KEY=${{ secrets.SECRET_KEY }}
             DATABASE_URL=${{ secrets.DATABASE_URL }}
+            API_VERSION=${{ env.TAG }}
       - name: 🚀 Push to Hugging Face Space
         if: github.ref == 'refs/heads/main'
         env:

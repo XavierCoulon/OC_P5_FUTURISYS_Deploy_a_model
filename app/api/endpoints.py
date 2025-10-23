@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Response, status
@@ -27,7 +28,10 @@ api_router = APIRouter(
     response_description="Message de bienvenue au format JSON",
 )
 async def root():
-    return {"message": "Welcome to Futurisys ML API"}
+    return {
+        "message": "Welcome to Futurisys ML API",
+        "api_version": os.getenv("API_VERSION", "dev"),
+    }
 
 
 @api_router.get(
