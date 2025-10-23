@@ -17,6 +17,9 @@ RUN pip install --no-cache-dir --upgrade pip \
 EXPOSE 7860
 ENV PORT=7860
 ENV ENVIRONMENT=production
+ARG API_VERSION=dev
+ENV API_VERSION=$API_VERSION
+
 
 # Lancer init DB (idempotent) puis Uvicorn SANS reload
 CMD ["bash", "-lc", "python create_db.py && uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]

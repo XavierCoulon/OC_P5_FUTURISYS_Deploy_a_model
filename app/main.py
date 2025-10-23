@@ -14,7 +14,7 @@ load_dotenv()
 app = FastAPI(
     title=os.getenv("API_TITLE", "Futurisys ML API"),
     description=os.getenv("API_DESCRIPTION", "Simple ML model deployment API"),
-    version=os.getenv("API_VERSION", "1.0.0"),
+    version=os.getenv("API_VERSION", "dev"),
 )
 
 # === Middleware CORS (utile si tu appelles ton API depuis le front) ===
