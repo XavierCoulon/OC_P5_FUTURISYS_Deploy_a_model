@@ -15,14 +15,6 @@ from app.schemas import (
     PredictionOutputResponse,
 )
 
-# Import encoders if needed in the future
-# from encoders import (
-#     apply_binary_encoding,
-#     apply_label_encoding,
-#     apply_onehot_encoding,
-#     apply_ordinal_encoding,
-# )
-
 
 def create_prediction_input(
     db: Session, data: PredictionInputCreate
