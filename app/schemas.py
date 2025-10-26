@@ -170,8 +170,15 @@ class PredictionInputBase(BaseModel):
         examples=[-0.3],
     )
 
+    class Config:
+        from_attributes = True
+
+
+class PredictionInputCreate(PredictionInputBase):
+    """Schéma utilisé pour la création (POST)"""
+
     @model_validator(mode="after")
-    def check_coherence_globale(self):
+    def check_coherence_globale(self) -> "PredictionInputCreate":
         """
         Valide la cohérence logique entre plusieurs champs :
         - Les années dans le poste et dans l’entreprise ne peuvent pas dépasser l’expérience totale.
@@ -228,15 +235,6 @@ class PredictionInputBase(BaseModel):
             raise ValueError("L’écart d’évaluation doit être compris entre -5 et 5.")
 
         return self
-
-    class Config:
-        from_attributes = True
-
-
-class PredictionInputCreate(PredictionInputBase):
-    """Schéma utilisé pour la création (POST)"""
-
-    pass
 
 
 class PredictionInputResponse(PredictionInputBase):

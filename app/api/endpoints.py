@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Response, status
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
@@ -135,7 +135,7 @@ def get_prediction(prediction_id: int, db: Session = Depends(get_db)):
         db.query(PredictionInput).filter(PredictionInput.id == prediction_id).first()
     )
     if not prediction:
-        return {"error": "Prediction not found"}
+        raise HTTPException(status_code=404, detail="Prediction not found")
     return prediction
 
 
@@ -149,7 +149,7 @@ def get_prediction(prediction_id: int, db: Session = Depends(get_db)):
     ),
     response_description="Message de confirmation de suppression.",
     responses={
-        200: {"description": "Prédiction supprimée avec succès"},
+        204: {"description": "Prédiction supprimée avec succès"},
         404: {"description": "Prédiction introuvable"},
     },
 )
@@ -161,7 +161,7 @@ def delete_prediction(prediction_id: int, db: Session = Depends(get_db)):
         db.query(PredictionInput).filter(PredictionInput.id == prediction_id).first()
     )
     if not prediction:
-        return {"error": "Prediction not found"}
+        raise HTTPException(status_code=404, detail="Prediction not found")
     db.delete(prediction)
     db.commit()
-    return {"message": "Prediction deleted successfully"}
+    return Response(status_code=204)
