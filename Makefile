@@ -1,31 +1,26 @@
 # Development commands
-.PHONY: format lint check test setup-pre-commit
+.PHONY: up down rebuild precommit test coverage
 
-# Set up pre-commit hooks
-setup-pre-commit:
-	pre-commit install
+# Docker commands
+up:
+	docker-compose up -d
 
-# Format code with black and isort
-format:
-	black app/
-	isort app/
+down:
+	docker-compose down
 
-# Lint code with flake8
-lint:
-	flake8 app/
+rebuild:
+	docker-compose down
+	docker-compose build
+	docker-compose up -d
 
-# Check code formatting without making changes
-check:
-	black --check app/
-	isort --check-only app/
-	flake8 app/
+# Precommit commands
+precommit:
+	pre-commit run --all-files
 
 # Run tests
 test:
-	pytest
+	pytest -v
 
-# Run all checks (format check + lint + tests)
-check-all: check test
-
-# Format and then run all checks
-format-and-check: format check-all
+# covergage report
+coverage:
+	pytest --cov=app --cov-report=term-missing --cov-report=html
