@@ -145,6 +145,7 @@ def sample_input():
     """Exemple d'entrée de prédiction pour les tests."""
     return {
         "age": 41,
+        "matricule": "M12345",
         "genre": "F",
         "revenu_mensuel": 5993,
         "statut_marital": "Célibataire",

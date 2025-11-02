@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import pytest
+from fastapi import HTTPException
 
 from app.models import PredictionInput, PredictionOutput
 from app.schemas import PredictionInputCreate, PredictionOutputCreate
@@ -8,6 +9,8 @@ from app.services import (
     create_prediction_full_service,
     create_prediction_input,
     create_prediction_output,
+    delete_prediction_input,
+    get_prediction_input_by_id,
     get_prediction_inputs,
     get_prediction_outputs,
 )
@@ -42,11 +45,40 @@ def mock_model():
 
 
 def test_create_prediction_input(db, payload_input):
-    """Vérifie que l’insertion d’un input fonctionne et retourne un objet persistant."""
+    """Vérifie que l'insertion d'un input fonctionne et retourne un objet persistant."""
     obj = create_prediction_input(db, payload_input)
     assert obj.id is not None
     assert obj.age == payload_input.age
+    assert obj.matricule == payload_input.matricule
     assert db.query(PredictionInput).count() == 1
+
+
+def test_create_prediction_input_duplicate_matricule(db, payload_input):
+    """Vérifie qu'on ne peut pas créer deux inputs avec le même matricule."""
+    # Première création réussit
+    create_prediction_input(db, payload_input)
+
+    # Deuxième création avec le même matricule échoue
+    with pytest.raises(HTTPException) as exc_info:
+        create_prediction_input(db, payload_input)
+
+    assert exc_info.value.status_code == 409
+    assert payload_input.matricule in str(exc_info.value.detail)
+
+
+def test_create_prediction_input_no_matricule(db, sample_input):
+    """Vérifie qu'on peut créer plusieurs inputs sans matricule."""
+    sample_input["matricule"] = None
+    payload = PredictionInputCreate(**sample_input)
+
+    # Deux créations sans matricule devraient réussir
+    obj1 = create_prediction_input(db, payload)
+    obj2 = create_prediction_input(db, payload)
+
+    assert obj1.id != obj2.id
+    assert obj1.matricule is None
+    assert obj2.matricule is None
+    assert db.query(PredictionInput).count() == 2
 
 
 def test_get_prediction_inputs(db, payload_input):
@@ -56,6 +88,56 @@ def test_get_prediction_inputs(db, payload_input):
     assert isinstance(results, list)
     assert len(results) == 1
     assert results[0].age == payload_input.age
+    assert results[0].matricule == payload_input.matricule
+
+
+def test_get_prediction_inputs_with_filter(db, sample_input):
+    """Vérifie le filtrage par matricule."""
+    # Crée deux inputs avec des matricules différents
+    sample1 = sample_input.copy()
+    sample1["matricule"] = "M11111"
+    sample2 = sample_input.copy()
+    sample2["matricule"] = "M22222"
+
+    create_prediction_input(db, PredictionInputCreate(**sample1))
+    create_prediction_input(db, PredictionInputCreate(**sample2))
+
+    # Teste le filtrage
+    results_all = get_prediction_inputs(db)
+    results_filtered = get_prediction_inputs(db, matricule="M11111")
+
+    assert len(results_all) == 2
+    assert len(results_filtered) == 1
+    assert results_filtered[0].matricule == "M11111"
+
+
+def test_get_prediction_input_by_id(db, payload_input):
+    """Vérifie la récupération d'un input par ID."""
+    created_obj = create_prediction_input(db, payload_input)
+
+    # Test avec ID existant
+    found_obj = get_prediction_input_by_id(db, created_obj.id)
+    assert found_obj is not None
+    assert found_obj.id == created_obj.id
+    assert found_obj.matricule == payload_input.matricule
+
+    # Test avec ID inexistant
+    not_found = get_prediction_input_by_id(db, 999999)
+    assert not_found is None
+
+
+def test_delete_prediction_input(db, payload_input):
+    """Vérifie la suppression d'un input."""
+    created_obj = create_prediction_input(db, payload_input)
+
+    # Test suppression réussie
+    success = delete_prediction_input(db, created_obj.id)
+    assert success is True
+    assert db.query(PredictionInput).count() == 0
+
+    # Test suppression d'un ID inexistant
+    success_not_found = delete_prediction_input(db, 999999)
+    assert success_not_found is False
 
 
 def test_create_prediction_output(db, sample_input):
@@ -104,6 +186,7 @@ def test_create_prediction_full_service(db, payload_input, mock_model):
 
     # Vérifie que les sous-objets sont bien générés
     assert result.input.id is not None
+    assert result.input.matricule == payload_input.matricule
     assert result.output.prediction in [0, 1]
     assert 0 <= result.output.probability <= 1
 
@@ -114,3 +197,18 @@ def test_create_prediction_full_service(db, payload_input, mock_model):
     # --- Vérifie la persistance dans la DB ---
     assert db.query(PredictionInput).count() == 1
     assert db.query(PredictionOutput).count() == 1
+
+
+def test_create_prediction_full_service_duplicate_matricule(
+    db, payload_input, mock_model
+):
+    """Vérifie que le service complet refuse les matricules en double."""
+    # Première création réussit
+    create_prediction_full_service(db, payload_input)
+
+    # Deuxième création avec le même matricule échoue
+    with pytest.raises(HTTPException) as exc_info:
+        create_prediction_full_service(db, payload_input)
+
+    assert exc_info.value.status_code == 409
+    assert payload_input.matricule in str(exc_info.value.detail)

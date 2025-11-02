@@ -6,13 +6,17 @@ from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 from app.core.database import engine, get_db
-from app.models import PredictionInput
 from app.schemas import (
     PredictionFullResponse,
     PredictionInputCreate,
     PredictionInputResponse,
 )
-from app.services import create_prediction_full_service, get_prediction_inputs
+from app.services import (
+    create_prediction_full_service,
+    delete_prediction_input,
+    get_prediction_input_by_id,
+    get_prediction_inputs,
+)
 
 api_router = APIRouter(
     prefix="",
@@ -107,15 +111,20 @@ def create_prediction(
     "/predictions",
     tags=["Prédictions"],
     summary="Lister les entrées de prédiction",
-    description="Renvoie la liste paginée des entrées enregistrées dans la base de données.",
+    description="Renvoie la liste paginée des entrées enregistrées dans la base de données. Permet de filtrer par matricule.",
     response_model=list[PredictionInputResponse],
     response_description="Liste des entrées enregistrées, avec leur horodatage de création.",
 )
-def list_predictions(db: Session = Depends(get_db), skip: int = 0, limit: int = 10):
+def list_predictions(
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 10,
+    matricule: str | None = None,
+):
     """
-    Liste les entrées de prédiction stockées.
+    Liste les entrées de prédiction stockées, avec option de filtrage par matricule.
     """
-    return get_prediction_inputs(db, skip=skip, limit=limit)
+    return get_prediction_inputs(db, skip, limit, matricule)
 
 
 @api_router.get(
@@ -131,9 +140,7 @@ def get_prediction(prediction_id: int, db: Session = Depends(get_db)):
     """
     Récupère une entrée de prédiction par son ID.
     """
-    prediction = (
-        db.query(PredictionInput).filter(PredictionInput.id == prediction_id).first()
-    )
+    prediction = get_prediction_input_by_id(db, prediction_id)
     if not prediction:
         raise HTTPException(status_code=404, detail="Prediction not found")
     return prediction
@@ -157,11 +164,7 @@ def delete_prediction(prediction_id: int, db: Session = Depends(get_db)):
     """
     Supprime une entrée de prédiction par son ID.
     """
-    prediction = (
-        db.query(PredictionInput).filter(PredictionInput.id == prediction_id).first()
-    )
-    if not prediction:
+    success = delete_prediction_input(db, prediction_id)
+    if not success:
         raise HTTPException(status_code=404, detail="Prediction not found")
-    db.delete(prediction)
-    db.commit()
     return Response(status_code=204)
