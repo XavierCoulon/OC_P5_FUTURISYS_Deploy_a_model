@@ -1,4 +1,3 @@
-
 ---
 title: Futurisys
 emoji: 🧠
@@ -10,36 +9,32 @@ app_file: app.py
 pinned: false
 ---
 
+# OC P5 Futurisys - Déploiement d'un modèle ML
 
-# OC## Features
+Application FastAPI pour le déploiement d'un modèle de Machine Learning avec interface utilisateur Gradio intégrée.
 
--   🚀 **FastAPI** - Modern, fast web framework for building APIs
--   🗄️ **SQLAlchemy ORM** - Powerful database ORM for Python
--   📝 **Pydantic** - Data validation using Python type annotations
--   🐍 **Pyenv Environment** - Isolated Python environment management
--   🔧 **Environment Variables** - Configuration via .env files
--   🔒 **Git Security** - Proper .gitignore for sensitive filesURISYS_Deploy_a_model
+## 🚀 Fonctionnalités
 
-A simple FastAPI application for ML model deployment with environment variable support.
+-   **🤖 Prédictions ML** - Modèle de prédiction de départ d'employés
+-   **🚀 FastAPI** - API REST moderne et performante
+-   **🎨 Interface Gradio** - Interface web interactive intégrée
+-   **🗄️ Base de données PostgreSQL** - Stockage des données avec SQLAlchemy 2.0
+-   **📝 Validation Pydantic** - Validation robuste des données d'entrée
+-   **🐳 Docker** - Déploiement containerisé avec docker-compose
+-   **🧪 Tests automatisés** - Suite de tests avec pytest et coverage
+-   **🔧 Outils de développement** - Black, isort, flake8, pre-commit hooks
+-   **📊 Monitoring** - Endpoints de santé et métriques
+-   **🔒 Configuration sécurisée** - Variables d'environnement et .env
 
-## Features
-
--   🚀 **FastAPI** - Modern, fast web framework for building APIs
--   🗄️ **SQLAlchemy ORM** - Powerful database ORM for Python
--   📝 **Pydantic** - Data validation using Python type annotations
--   🐍 **Pyenv Environment** - Isolated Python environment management
--   � **RESTful API** - Clean API structure with proper HTTP methods
-
-
-## ERD
+## 📊 Structure de la base de données
 
 ```mermaid
 erDiagram
     prediction_inputs {
-        INTEGER id
+        INTEGER id PK
         INTEGER age
-        VARCHAR(5) genre
-        DOUBLE PRECISION revenu_mensuel
+        VARCHAR genre
+        FLOAT revenu_mensuel
         INTEGER nombre_experiences_precedentes
         INTEGER annee_experience_totale
         INTEGER annees_dans_l_entreprise
@@ -50,242 +45,358 @@ erDiagram
         INTEGER satisfaction_employee_equipe
         INTEGER satisfaction_employee_equilibre_pro_perso
         INTEGER note_evaluation_actuelle
-        VARCHAR(3) heure_supplementaires
-        DOUBLE PRECISION augmentation_salaire_precedente
+        VARCHAR heure_supplementaires
+        FLOAT augmentation_salaire_precedente
         INTEGER nombre_participation_pee
         INTEGER nb_formations_suivies
-        DOUBLE PRECISION distance_domicile_travail
+        FLOAT distance_domicile_travail
         INTEGER niveau_education
-        VARCHAR(11) frequence_deplacement
+        VARCHAR frequence_deplacement
         INTEGER annees_depuis_la_derniere_promotion
         INTEGER annes_sous_responsable_actuel
-        VARCHAR(10) departement
-        VARCHAR(11) statut_marital
-        VARCHAR(23) poste
-        VARCHAR(23) domaine_etude
-        DOUBLE PRECISION mobilite_interne_ratio
-        DOUBLE PRECISION ratio_anciennete
-        DOUBLE PRECISION delta_evaluation
+        VARCHAR departement
+        VARCHAR statut_marital
+        VARCHAR poste
+        VARCHAR domaine_etude
+        FLOAT mobilite_interne_ratio
+        FLOAT ratio_anciennete
+        FLOAT delta_evaluation
+        TIMESTAMP created_at
     }
     prediction_outputs {
-        INTEGER id
-        INTEGER prediction_input_id
+        INTEGER id PK
+        INTEGER prediction_input_id FK
         INTEGER prediction
-        DOUBLE PRECISION probability
-        DOUBLE PRECISION threshold
+        FLOAT probability
+        FLOAT threshold
+        TIMESTAMP created_at
     }
-    prediction_outputs }o--|| prediction_inputs : prediction_outputs_prediction_input_id_fkey
+    prediction_outputs }o--|| prediction_inputs : "FK prediction_input_id"
 ```
 
-## Project Structure
+## 📁 Structure du projet
 
 ```
 ├── app/
 │   ├── api/
 │   │   ├── __init__.py
-│   │   └── endpoints.py             # All API endpoints with router
+│   │   └── endpoints.py             # Routes API (CRUD prédictions)
+│   ├── core/
+│   │   ├── config.py                # Configuration Pydantic Settings
+│   │   └── database.py              # Configuration SQLAlchemy
+│   ├── ml/
+│   │   ├── model_loader.py          # Chargement du modèle ML
+│   │   └── random_forest_optimized.pkl  # Modèle pré-entraîné
 │   ├── __init__.py
-│   ├── main.py                      # FastAPI application entry point
-│   ├── models.py                    # SQLAlchemy models
-│   └── schemas.py                   # Pydantic schemas
-├── .env                             # Environment variables (not in git)
-├── .env.example                     # Environment template (in git)
-├── .gitignore                       # Git ignore rules
-├── .python-version                  # Pyenv version file
-├── requirements.txt                 # Python dependencies
-└── README.md                        # This file
+│   ├── enums.py                     # Énumérations métier
+│   ├── main.py                      # Point d'entrée FastAPI + Gradio
+│   ├── models.py                    # Modèles SQLAlchemy (SQLAlchemy 2.0)
+│   ├── schemas.py                   # Schémas Pydantic avec validation
+│   ├── services.py                  # Logique métier et services
+│   └── ui.py                        # Interface Gradio
+├── tests/
+│   ├── conftest.py                  # Configuration pytest
+│   ├── test_endpoints.py            # Tests API
+│   ├── test_services.py             # Tests services
+│   └── test_*.py                    # Autres tests
+├── .github/workflows/               # CI/CD GitHub Actions
+├── create_db.py                     # Script création tables
+├── docker-compose.yml               # Stack PostgreSQL + API
+├── Dockerfile                       # Image de production
+├── Makefile                         # Commandes de développement
+├── requirements.txt                 # Dépendances Python
+├── requirements-dev.txt             # Dépendances de développement
+├── .env.example                     # Template variables d'environnement
+├── .pre-commit-config.yaml         # Hooks pre-commit
+└── setup.cfg                        # Configuration flake8/coverage
 ```
 
-## Setup
+## 🛠️ Installation et configuration
 
-### 1. Python Environment (Pyenv)
+### Prérequis
 
-The project uses pyenv for Python environment management:
+-   Python 3.12+
+-   Docker et Docker Compose
+-   Git
+
+### Option 1: Développement local avec Docker (recommandé)
 
 ```bash
-# Navigate to project directory (pyenv will auto-activate)
-cd /Users/xaviercoulon/Documents/OC/OC_P5_Futurisys
+# Cloner le repository
+git clone <repository-url>
+cd OC_P5_Futurisys
 
-# Verify environment is active
-pyenv version
-# Should show: OC_P5_Futurisys (set by .python-version)
+# Copier et configurer les variables d'environnement
+cp .env.example .env
+# Éditer .env avec vos paramètres
+
+# Lancer la stack complète (PostgreSQL + API)
+make up
+# ou: docker compose up -d
+
+# L'application sera accessible sur:
+# - API: http://localhost:8000/v1/
+# - Interface Gradio: http://localhost:8000/
+# - Documentation: http://localhost:8000/docs
 ```
 
-### 2. Install Dependencies
+### Option 2: Développement local Python
 
 ```bash
+# Installer les dépendances
 pip install -r requirements.txt
-```
+pip install -r requirements-dev.txt
 
-### 3. Environment Configuration
-
-```bash
-# Copy example environment file
+# Configurer l'environnement
 cp .env.example .env
 
-# Edit .env file with your configuration
-nano .env
+# Créer la base de données (après avoir configuré DATABASE_URL)
+python create_db.py
+
+# Lancer le serveur de développement
+fastapi dev app/main.py
+# ou: uvicorn app.main:app --reload
 ```
 
-**Important**: The `.env` file contains sensitive information and is not tracked by git.
+## 🚀 Utilisation
 
-## Running the Application
+### Interface utilisateur (Gradio)
 
-### Start the Development Server
+L'interface web principale est accessible à la racine : http://localhost:8000/
+
+### API REST
+
+Les endpoints principaux sont préfixés par `/v1/` :
+
+#### Endpoints généraux
+
+-   **GET** `/v1/` - Message d'accueil de l'API
+-   **GET** `/v1/health` - Vérification de l'état de santé
+-   **GET** `/v1/erd` - Schéma de base de données (format Mermaid)
+
+#### Endpoints de prédiction
+
+-   **POST** `/v1/predictions` - Créer une nouvelle prédiction
+-   **GET** `/v1/predictions` - Lister les prédictions (avec pagination)
+-   **GET** `/v1/predictions/{id}` - Récupérer une prédiction par ID
+-   **DELETE** `/v1/predictions/{id}` - Supprimer une prédiction
+
+#### Documentation automatique
+
+-   **Swagger UI** : http://localhost:8000/docs
+-   **ReDoc** : http://localhost:8000/redoc
+
+### Exemple d'utilisation API
 
 ```bash
-# Using FastAPI CLI (recommended)
-fastapi dev app/main.py
+# Créer une prédiction
+curl -X POST "http://localhost:8000/v1/predictions" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "age": 35,
+    "genre": "M",
+    "revenu_mensuel": 3200.5,
+    "nombre_experiences_precedentes": 3,
+    "annee_experience_totale": 10,
+    "annees_dans_l_entreprise": 5,
+    "annees_dans_le_poste_actuel": 3,
+    "satisfaction_employee_environnement": 4,
+    "niveau_hierarchique_poste": 3,
+    "satisfaction_employee_nature_travail": 5,
+    "satisfaction_employee_equipe": 4,
+    "satisfaction_employee_equilibre_pro_perso": 3,
+    "note_evaluation_actuelle": 4,
+    "heure_supplementaires": "Oui",
+    "augmentation_salaire_precedente": 3.5,
+    "nombre_participation_pee": 2,
+    "nb_formations_suivies": 5,
+    "distance_domicile_travail": 12.3,
+    "niveau_education": 4,
+    "frequence_deplacement": "Occasionnel",
+    "annees_depuis_la_derniere_promotion": 2,
+    "annes_sous_responsable_actuel": 3,
+    "departement": "Consulting",
+    "statut_marital": "Marié(e)",
+    "poste": "Consultant",
+    "domaine_etude": "Infra & Cloud",
+    "mobilite_interne_ratio": 0.2,
+    "ratio_anciennete": 0.5,
+    "delta_evaluation": -0.3
+  }'
 
-# Or using uvicorn directly
-python -m uvicorn app.main:app --reload --port 8000
+# Lister les prédictions
+curl "http://localhost:8000/v1/predictions?skip=0&limit=10"
 ```
 
-The API will be available at:
+## ⚙️ Variables d'environnement
 
--   **API**: http://127.0.0.1:8000
--   **Interactive Documentation**: http://127.0.0.1:8000/docs
--   **Alternative Documentation**: http://127.0.0.1:8000/redoc
-
-### Test the API
-
-```bash
-# Start the development server
-fastapi dev app/main.py
-
-# Test manually with curl
-curl -X GET "http://127.0.0.1:8000/v1/"
-curl -X GET "http://127.0.0.1:8000/v1/health"
-curl -X GET "http://127.0.0.1:8000/v1/info"
-curl -X GET "http://127.0.0.1:8000/v1/status"
-```
-
-## API Endpoints
-
-### Main Routes (v1 prefix)
-
--   **GET** `/v1/` - Root endpoint with welcome message
--   **GET** `/v1/health` - Check API health status
--   **GET** `/v1/info` - Get API information
--   **GET** `/v1/status` - Get API status with database check
-
-### Example Response
-
-```json
-{
-    "message": "Futurisys API is running",
-    "data": {
-        "version": "1.0.0",
-        "description": "Futurisys web API",
-        "project_name": "Futurisys API"
-    },
-    "timestamp": "2025-10-07T16:20:00.000000"
-}
-```
-
-## Environment Variables
-
-The application uses environment variables for configuration. Copy `.env.example` to `.env` and customize:
+Copiez `.env.example` vers `.env` et personnalisez :
 
 ```env
-# Environment Configuration
+# Configuration générale
 DEBUG=True
 ENVIRONMENT=development
+API_VERSION=dev
 
-# Database
-DATABASE_URL=sqlite:///./futurisys.db
+# Base de données PostgreSQL
+DATABASE_URL=postgresql://admin:password@localhost:5432/futurisys_db
 
-# API Configuration
+# Configuration API
 API_TITLE=Futurisys ML API
-API_DESCRIPTION=Simple ML model deployment API
-API_VERSION=1.0.0
-
-# Security
-SECRET_KEY=your-secret-key-change-this-in-production
-
-# Server Configuration
+API_DESCRIPTION=API de prédiction de départ d'employés
 HOST=0.0.0.0
 PORT=8000
+
+# Sécurité (changez en production)
+SECRET_KEY=your-secret-key-change-this-in-production
 
 # Logging
 LOG_LEVEL=INFO
 ```
 
-## Key Technologies
+## 🔄 CI/CD et GitHub Actions
 
-### FastAPI
+Le projet utilise GitHub Actions pour l'automatisation du cycle de développement :
 
--   Fast and modern web framework
--   Automatic API documentation
--   Built-in data validation
--   Async support
+### 🚦 Workflows configurés
 
-### SQLAlchemy
+-   **🧪 Tests automatiques** (`test.yml`) - Validation du code sur chaque PR
+-   **🐳 Build & Push Docker** (`docker-publish.yml`) - Construction et publication d'images
+-   **🚀 Déploiement** - Vers Hugging Face Spaces automatiquement
+-   **✅ Quality checks** - Vérification du formatage et linting
 
--   Python SQL toolkit and ORM
--   Database abstraction layer
--   Migration support with Alembic
+### 🔧 Déclenchement automatique
 
-### Pydantic
+-   **Pull Requests** : Tests complets, vérifications qualité (Black, flake8, pytest)
+-   **Tags v\*** : Build et publication d'images Docker vers DockerHub
+-   **Push sur `main`** : Déploiement automatique vers Hugging Face Spaces
+-   **Commits** : Hooks pre-commit locaux + validation CI
 
--   Data validation using Python type annotations
--   Automatic JSON schema generation
--   Configuration management
+### 📋 Pipeline type
 
-### Pyenv
+```mermaid
+graph LR
+    A[Code Push] --> B[Tests unitaires]
+    B --> C[Quality checks]
+    C --> D[Build Docker]
+    D --> E[Deploy HF Spaces]
 
--   Python version management
--   Virtual environment isolation
--   Automatic environment activation
-
-## Development
-
-### Install Additional Packages
-
-```bash
-pip install package_name
-pip freeze > requirements.txt  # Update requirements
+    F[Tag v*] --> G[Build & Push DockerHub]
 ```
 
-### Database Migrations (when needed)
+Le système garantit que seul du code testé et validé atteint la production.
+
+## 🧪 Développement et tests
+
+### Commandes Make disponibles
 
 ```bash
-# Initialize Alembic
-alembic init migrations
+# Docker
+make up              # Démarrer la stack
+make down            # Arrêter la stack
+make rebuild         # Rebuild et redémarrer
 
-# Create migration
-alembic revision --autogenerate -m "description"
+# Tests et qualité code
+make test            # Lancer pytest
+make coverage        # Tests avec rapport de couverture
+make precommit       # Lancer pre-commit sur tous les fichiers
 
-# Apply migration
-alembic upgrade head
+# Voir Makefile pour plus de commandes
 ```
 
-### Testing
+### Tests
 
 ```bash
-# Run tests
+# Tests unitaires
 pytest
 
-# Run with coverage
-pytest --cov=app
+# Tests avec couverture
+pytest --cov=app --cov-report=html
+
+# Tests spécifiques
+pytest tests/test_endpoints.py -v
 ```
 
-## Production Deployment
+### Outils de qualité code
 
-For production deployment, consider:
+Le projet utilise plusieurs outils pour maintenir la qualité du code :
 
-1. **Environment Variables**: Use proper secrets management
-2. **Database**: Switch from SQLite to PostgreSQL/MySQL
-3. **WSGI Server**: Use Gunicorn with Uvicorn workers
-4. **Reverse Proxy**: Use Nginx or similar
-5. **Containerization**: Docker deployment
-6. **Monitoring**: Add logging and monitoring
+-   **Black** : Formatage automatique du code
+-   **isort** : Tri des imports
+-   **flake8** : Linting et vérification PEP8
+-   **pre-commit** : Hooks Git automatiques
 
-## Next Steps
+```bash
+# Formater le code
+black .
+isort .
 
-1. **Add Database Models**: Create SQLAlchemy models for your data
-2. **Implement Authentication**: Add JWT-based authentication
-3. **Expand API**: Add business logic endpoints
-4. **Monitoring**: Add logging and metrics
-5. **Testing**: Expand test coverage
-6. **Documentation**: Add more detailed API documentation
+# Vérifier le linting
+flake8
+
+# Installer les hooks pre-commit
+pre-commit install
+```
+
+## 🚀 Déploiement
+
+### Déploiement Docker
+
+```bash
+# Build de l'image
+docker build -t futurisys-api .
+
+# Lancer avec docker-compose (recommandé)
+docker compose up -d --build
+```
+
+### Déploiement Hugging Face Spaces
+
+Ce projet est configuré pour être déployé sur Hugging Face Spaces :
+
+1. Le fichier de configuration Hugging Face est dans l'en-tête du README
+2. L'interface Gradio est montée à la racine (`/`)
+3. L'API est accessible sous `/v1/`
+
+### Production
+
+Pour un déploiement en production, considérez :
+
+1. **Variables d'environnement** : Utilisez un gestionnaire de secrets
+2. **Base de données** : PostgreSQL avec sauvegarde automatique
+3. **Serveur WSGI** : Gunicorn avec workers Uvicorn
+4. **Reverse Proxy** : Nginx ou traefik
+5. **Monitoring** : Logs structurés et métriques
+6. **Sécurité** : HTTPS, authentification, rate limiting
+
+## 🤝 Contribution
+
+1. Fork le projet
+2. Créez une branche feature (`git checkout -b feature/nouvelle-fonctionnalite`)
+3. Commitez vos changements (`git commit -m 'Ajout nouvelle fonctionnalité'`)
+4. Pushez vers la branche (`git push origin feature/nouvelle-fonctionnalite`)
+5. Ouvrez une Pull Request
+
+### Workflow de développement
+
+1. Les hooks pre-commit vérifient automatiquement le code
+2. Les tests doivent passer avant merge
+3. La couverture de code doit être maintenue > 80%
+4. Suivez les conventions de nommage Python (PEP8)
+
+## 📝 Technologies utilisées
+
+-   **FastAPI** - Framework web moderne et performant
+-   **Gradio** - Interface utilisateur web interactive
+-   **SQLAlchemy 2.0** - ORM avec support des types mappés
+-   **Pydantic** - Validation de données avec annotations de types
+-   **PostgreSQL** - Base de données relationnelle
+-   **Docker & Docker Compose** - Containerisation et orchestration
+-   **pytest** - Framework de tests
+-   **Black, isort, flake8** - Outils de qualité code
+-   **pre-commit** - Hooks Git automatiques
+-   **scikit-learn** - Modèle de Machine Learning
+
+## 📄 Licence
+
+Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
