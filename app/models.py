@@ -1,7 +1,7 @@
 # app/models.py
 from sqlalchemy import DateTime
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy import Float, ForeignKey, Integer, func
+from sqlalchemy import Float, ForeignKey, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -20,6 +20,7 @@ class PredictionInput(Base):
     __tablename__ = "prediction_inputs"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
+    matricule: Mapped[str] = mapped_column(String, unique=True, nullable=True)
     age: Mapped[int] = mapped_column(Integer)
     genre: Mapped[Genre] = mapped_column(SAEnum(Genre), nullable=False)
     revenu_mensuel: Mapped[float] = mapped_column(Float)
@@ -55,11 +56,12 @@ class PredictionInput(Base):
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
 
-    # Relation 1:N avec PredictionOutput
-    prediction_outputs = relationship(
+    # Relation 1:1 avec PredictionOutput
+    prediction_output = relationship(
         "PredictionOutput",
         back_populates="prediction_input",
         cascade="all, delete-orphan",
+        uselist=False,
     )
 
 
@@ -68,7 +70,10 @@ class PredictionOutput(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     prediction_input_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("prediction_inputs.id", ondelete="CASCADE"), nullable=False
+        Integer,
+        ForeignKey("prediction_inputs.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
     )
     prediction: Mapped[int] = mapped_column(Integer, nullable=False)
     probability: Mapped[float] = mapped_column(Float, nullable=False)
@@ -79,5 +84,5 @@ class PredictionOutput(Base):
 
     # Relation vers PredictionInput
     prediction_input = relationship(
-        "PredictionInput", back_populates="prediction_outputs"
+        "PredictionInput", back_populates="prediction_output"
     )

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from datetime import datetime
 from typing import Any, Optional
 
@@ -26,6 +28,11 @@ class PredictionInputBase(BaseModel):
         examples=[35],
         ge=18,
         le=70,
+    )
+    matricule: Optional[str] = Field(
+        None,
+        description="Matricule unique de l’employé",
+        examples=["M12345"],
     )
     genre: Genre = Field(
         ...,
@@ -180,10 +187,15 @@ class PredictionInputCreate(PredictionInputBase):
     def check_coherence_globale(self) -> "PredictionInputCreate":
         """
         Valide la cohérence logique entre plusieurs champs :
+        - Le matricule, s’il est fourni, doit commencer par un M.
         - Les années dans le poste et dans l’entreprise ne peuvent pas dépasser l’expérience totale.
         - L’expérience totale ne peut pas être inférieure à ces valeurs.
         - Le ratio de mobilité interne doit être compris entre 0 et 1.
         """
+
+        # --- Vérification sur le matricule ---
+        if self.matricule is not None and not self.matricule.startswith("M"):
+            raise ValueError("Le matricule doit commencer par un M.")
 
         # --- Vérifications sur les années ---
         if (
@@ -248,6 +260,10 @@ class PredictionInputResponse(PredictionInputBase):
         ...,
         description="Date et heure de création automatique (UTC, ISO 8601)",
         examples=["2025-10-15T18:53:48.259Z"],
+    )
+    prediction_output: PredictionOutputResponse | None = Field(
+        default=None,
+        description="Sortie de prédiction associée à cette entrée",
     )
 
     model_config = ConfigDict(from_attributes=True)

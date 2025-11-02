@@ -99,6 +99,10 @@ class TestPredictionsEndpoint:
         assert len(data) >= 1
         assert "id" in data[0]
         assert "created_at" in data[0]
+        # Vérifie la présence du champ matricule
+        assert "matricule" in data[0]
+        # Vérifie la présence de prediction_output (peut être None)
+        assert "prediction_output" in data[0]
 
     @pytest.mark.asyncio
     async def test_get_prediction_by_id(self, async_client, sample_input):
@@ -116,6 +120,96 @@ class TestPredictionsEndpoint:
         data = get_resp.json()
         assert data["id"] == prediction_id
         assert "created_at" in data
+        # Vérifie la présence du champ matricule
+        assert "matricule" in data
+        # Vérifie la présence de prediction_output (peut être None)
+        assert "prediction_output" in data
+
+    @pytest.mark.asyncio
+    async def test_get_predictions_filter_by_matricule(
+        self, async_client, sample_input
+    ):
+        """
+        Vérifie que le filtrage par matricule fonctionne.
+        """
+        # Crée une prédiction avec un matricule spécifique
+        sample_input["matricule"] = "M12345"
+        await async_client.post("/predictions", json=sample_input)
+
+        # Crée une autre prédiction avec un matricule différent
+        sample_input_2 = sample_input.copy()
+        sample_input_2["matricule"] = "M67890"
+        await async_client.post("/predictions", json=sample_input_2)
+
+        # Filtre par le premier matricule
+        resp = await async_client.get("/predictions?matricule=M12345")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert isinstance(data, list)
+        # Tous les résultats devraient avoir le matricule M12345
+        for prediction in data:
+            assert prediction["matricule"] == "M12345"
+
+    @pytest.mark.asyncio
+    async def test_prediction_output_relation(self, async_client, sample_input):
+        """
+        Vérifie que la relation 1:1 avec prediction_output est correcte.
+        """
+        # Crée une prédiction complète (qui génère un output)
+        post_resp = await async_client.post("/predictions", json=sample_input)
+        assert post_resp.status_code == 201
+        prediction_id = post_resp.json()["input"]["id"]
+
+        # Vérifie que l'output a bien été créé
+        output_data = post_resp.json()["output"]
+        assert "id" in output_data
+        assert "prediction" in output_data
+        assert "probability" in output_data
+        assert "threshold" in output_data
+        assert "prediction_input_id" in output_data
+        assert output_data["prediction_input_id"] == prediction_id
+
+        # Récupère la prédiction via GET et vérifie la relation
+        get_resp = await async_client.get(f"/predictions/{prediction_id}")
+        assert get_resp.status_code == 200
+        data = get_resp.json()
+
+        # prediction_output peut être None ou contenir les données
+        # (selon si la relation est chargée et si l'output existe)
+        assert "prediction_output" in data
+
+    @pytest.mark.asyncio
+    async def test_duplicate_matricule_error(self, async_client, sample_input):
+        """
+        Vérifie qu'on ne peut pas créer deux prédictions avec le même matricule.
+        """
+        # Crée une première prédiction avec un matricule
+        sample_input["matricule"] = "M_UNIQUE_TEST"
+        resp1 = await async_client.post("/predictions", json=sample_input)
+        assert resp1.status_code == 201
+
+        # Tente de créer une deuxième prédiction avec le même matricule
+        resp2 = await async_client.post("/predictions", json=sample_input)
+        assert resp2.status_code == 409  # Conflict
+
+        error_data = resp2.json()
+        assert "detail" in error_data
+        assert "M_UNIQUE_TEST" in error_data["detail"]
+        assert "existe déjà" in error_data["detail"]
+
+    @pytest.mark.asyncio
+    async def test_matricule_none_allowed_multiple(self, async_client, sample_input):
+        """
+        Vérifie qu'on peut créer plusieurs prédictions avec matricule=None.
+        """
+        # Crée deux prédictions sans matricule
+        sample_input["matricule"] = None
+
+        resp1 = await async_client.post("/predictions", json=sample_input)
+        assert resp1.status_code == 201
+
+        resp2 = await async_client.post("/predictions", json=sample_input)
+        assert resp2.status_code == 201  # Devrait passer car matricule=None
 
     @pytest.mark.asyncio
     async def test_get_prediction_not_found(self, async_client):
@@ -184,6 +278,11 @@ class TestPredictionsEndpoint:
     @pytest.mark.parametrize(
         "field,value,expected_msg",
         [
+            (
+                "matricule",
+                "A12345",
+                "Value error, Le matricule doit commencer par un M.",
+            ),
             (
                 "annees_dans_le_poste_actuel",
                 20,

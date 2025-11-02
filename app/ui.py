@@ -25,6 +25,7 @@ from app.services import create_prediction_full_service
 # === Ordre des features ===
 FEATURE_ORDER = [
     "age",
+    "matricule",
     "genre",
     "revenu_mensuel",
     "nombre_experiences_precedentes",
