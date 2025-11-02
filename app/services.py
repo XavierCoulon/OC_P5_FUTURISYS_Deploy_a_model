@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import Enum
 
 import numpy as np
@@ -95,7 +95,7 @@ def create_prediction_full_service(
         prediction=prediction,
         probability=proba,
         threshold=threshold,
-        created_at=datetime.utcnow(),
+        created_at=datetime.now(UTC),
     )
     db.add(db_output)
     db.commit()

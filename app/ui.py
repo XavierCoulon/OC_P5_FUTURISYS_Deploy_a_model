@@ -149,7 +149,7 @@ def build_interface() -> gr.Interface:
         title=f"Futurisys – Prédiction de départ d’un employé (v{version})",
         description="Entrez les caractéristiques d’un employé pour estimer la probabilité de départ.",
         theme=theme,
-        allow_flagging="never",
+        flagging_mode="never",
         css="""
         footer { visibility: hidden; }
         #component-0 { margin-bottom: 1rem; }
