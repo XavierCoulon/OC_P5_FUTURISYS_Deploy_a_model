@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 from pydantic.fields import Field
 
 from app.enums import (
@@ -170,8 +170,7 @@ class PredictionInputBase(BaseModel):
         examples=[-0.3],
     )
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PredictionInputCreate(PredictionInputBase):
@@ -251,8 +250,7 @@ class PredictionInputResponse(PredictionInputBase):
         examples=["2025-10-15T18:53:48.259Z"],
     )
 
-    class Config:
-        from_attributes = True  # 👈 permet de lire les objets SQLAlchemy
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PredictionOutputBase(BaseModel):
@@ -272,8 +270,7 @@ class PredictionOutputBase(BaseModel):
         examples=[0.5],
     )
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class PredictionOutputCreate(PredictionOutputBase):
@@ -289,10 +286,14 @@ class PredictionOutputResponse(PredictionOutputBase):
     prediction_input_id: int
     created_at: datetime
 
+    model_config = ConfigDict(from_attributes=True)
+
 
 class PredictionFullResponse(BaseModel):
     input: PredictionInputResponse
     output: PredictionOutputResponse
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class HealthResponse(BaseModel):
