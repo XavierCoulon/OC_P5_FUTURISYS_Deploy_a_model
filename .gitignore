@@ -173,5 +173,8 @@ Thumbs.db
 # FastAPI specific
 .pytest_cache/
 
+# Gradio specific
+.gradio/
+
 # Ignore model binaries
 app/ml/*.pkl
