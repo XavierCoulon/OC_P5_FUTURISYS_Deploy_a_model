@@ -1,79 +1,96 @@
 name: 🚀 Build & Push Docker image
 
 on:
-  push:
-    tags:
-      - "v*" # Ex: v0.0.1, v1.0.0-beta
-    branches:
-      - main # Build automatique sur merge dans main
+    push:
+        tags:
+            - "v*" # Ex: v0.0.1, v1.0.0-beta
+        branches:
+            - main # Build automatique sur merge dans main
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+    build:
+        runs-on: ubuntu-latest
 
-    steps:
-      - name: 🧾 Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        steps:
+            - name: 🧾 Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      - name: 🧰 Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+            - name: 🧰 Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
 
-      - name: 🔐 Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+            - name: 🔐 Log in to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }}
+                  password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: 🏷️ Extract version tag (if exists)
-        id: vars
-        run: |
-          if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-            echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
-          else
-            echo "TAG=latest" >> $GITHUB_ENV
-          fi
+            - name: 🏷️ Extract version tag (if exists)
+              id: vars
+              run: |
+                  if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+                    echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+                  else
+                    echo "TAG=latest" >> $GITHUB_ENV
+                  fi
 
-      - name: 🐳 Build and push Docker image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: |
-            spino13/futurisys:${{ env.TAG }}
-            ${{ startsWith(env.TAG, 'v') && !contains(env.TAG, '-') && 'spino13/futurisys:latest' || '' }}
-          build-args: |
-            ENVIRONMENT=production
-            DEBUG=False
-            SECRET_KEY=${{ secrets.SECRET_KEY }}
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            API_VERSION=${{ env.TAG }}
+            - name: 🐳 Build and push Docker image
+              uses: docker/build-push-action@v6
+              with:
+                  context: .
+                  push: true
+                  tags: |
+                      spino13/futurisys:${{ env.TAG }}
+                      ${{ startsWith(env.TAG, 'v') && !contains(env.TAG, '-') && 'spino13/futurisys:latest' || '' }}
+                  build-args: |
+                      ENVIRONMENT=production
+                      DEBUG=False
+                      SECRET_KEY=${{ secrets.SECRET_KEY }}
+                      DATABASE_URL=${{ secrets.DATABASE_URL }}
+                      API_VERSION=${{ env.TAG }}
 
-      - name: 🚀 Push to Hugging Face Space
-        if: github.ref == 'refs/heads/main'
-        env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: |
-          echo "📦 Installing Hugging Face Hub..."
-          pip install -U huggingface_hub
+            - name: 🚀 Push to Hugging Face Space
+              if: github.ref == 'refs/heads/main'
+              env:
+                  HF_TOKEN: ${{ secrets.HF_TOKEN }}
+              run: |
+                  echo "📦 Installing Hugging Face Hub..."
+                  pip install -U huggingface_hub
 
-          echo "🚀 Uploading code to Space..."
-          python -c "
-          from huggingface_hub import HfApi
-          import os
+                  echo "� Setting API_VERSION on Hugging Face Space..."
+                  python -c "
+                  from huggingface_hub import HfApi
+                  import os
 
-          api = HfApi(token=os.environ['HF_TOKEN'])
+                  api = HfApi(token=os.environ['HF_TOKEN'])
 
-          # Upload all files to the space
-          api.upload_folder(
-              folder_path='.',
-              repo_id='XavierCoulon/futurisys',
-              repo_type='space',
-              commit_message='🚀 Auto-deploy from GitHub Actions',
-              ignore_patterns=['.git*', '__pycache__*', '*.pyc', '.pytest_cache*', 'node_modules*']
-          )
-          print('✅ Upload completed!')
-          "
+                  # Mettre à jour la variable d'environnement API_VERSION sur le Space
+                  api.add_space_variable(
+                      repo_id='XavierCoulon/futurisys',
+                      key='API_VERSION',
+                      value='${{ env.TAG }}',
+                      description='API Version from GitHub Actions'
+                  )
+                  print('✅ API_VERSION updated on Hugging Face Space!')
+                  "
 
-          echo "✅ Deployment to Hugging Face Space completed!"
+                  echo "�🚀 Uploading code to Space..."
+                  python -c "
+                  from huggingface_hub import HfApi
+                  import os
+
+                  api = HfApi(token=os.environ['HF_TOKEN'])
+
+                  # Upload all files to the space
+                  api.upload_folder(
+                      folder_path='.',
+                      repo_id='XavierCoulon/futurisys',
+                      repo_type='space',
+                      commit_message='🚀 Auto-deploy from GitHub Actions (v${{ env.TAG }})',
+                      ignore_patterns=['.git*', '__pycache__*', '*.pyc', '.pytest_cache*', 'node_modules*']
+                  )
+                  print('✅ Upload completed!')
+                  "
+
+                  echo "✅ Deployment to Hugging Face Space completed!"

@@ -81,6 +81,10 @@ CHOICES = {
 
 # === Fonction de prédiction ===
 def predict_from_ui(**kwargs):
+    # Nettoyer les chaînes vides pour les champs optionnels
+    if kwargs.get("matricule") == "":
+        kwargs["matricule"] = None
+
     # Convertir le dict brut en schéma Pydantic
     payload = PredictionInputCreate(**kwargs)
 
@@ -105,7 +109,17 @@ def predict_from_ui(**kwargs):
 def build_interface() -> gr.Interface:
     inputs = []
 
-    version = os.getenv("API_VERSION", "dev")
+    # Récupération intelligente de la version
+    def get_version():
+        # 1. Variable d'environnement (si définie sur HF)
+        env_version = os.getenv("API_VERSION")
+        if env_version and env_version != "dev":
+            return env_version.lstrip("v")
+
+        # 2. Valeur par défaut professionnelle
+        return "1.0.0"
+
+    version = get_version()
 
     for feature in FEATURE_ORDER:
         if feature in CHOICES:
@@ -125,6 +139,10 @@ def build_interface() -> gr.Interface:
             inputs.append(gr.Number(label="Âge", value=35, precision=0))
         elif feature == "distance_domicile_travail":
             inputs.append(gr.Slider(0, 100, step=1, label=feature))
+        elif feature == "matricule":
+            inputs.append(
+                gr.Text(label="Matricule (optionnel)", placeholder="Ex: M12345")
+            )
         else:
             inputs.append(gr.Text(label=feature))
 
