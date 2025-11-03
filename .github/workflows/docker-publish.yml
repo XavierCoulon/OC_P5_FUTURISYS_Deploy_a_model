@@ -54,14 +54,14 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          echo "📦 Installing Hugging Face CLI..."
-          pip install -U "huggingface_hub[cli]"
+          echo "📦 Installing Hugging Face Hub..."
+          pip install -U huggingface_hub
 
           echo "🔑 Logging in to Hugging Face..."
-          huggingface-cli login --token $HF_TOKEN
+          python -m huggingface_hub login --token $HF_TOKEN
 
           echo "🚀 Uploading code to Space..."
-          huggingface-cli upload . \
+          python -m huggingface_hub upload . \
             --repo-type=space \
             --repo-id=XavierCoulon/futurisys \
             --commit-message "🚀 Auto-deploy from GitHub Actions (Docker build: ${{ env.TAG }})"
