@@ -49,6 +49,7 @@ jobs:
             SECRET_KEY=${{ secrets.SECRET_KEY }}
             DATABASE_URL=${{ secrets.DATABASE_URL }}
             API_VERSION=${{ env.TAG }}
+
       - name: 🚀 Push to Hugging Face Space
         if: github.ref == 'refs/heads/main'
         env:
@@ -57,13 +58,22 @@ jobs:
           echo "📦 Installing Hugging Face Hub..."
           pip install -U huggingface_hub
 
-          echo "🔑 Logging in to Hugging Face..."
-          python -m huggingface_hub login --token $HF_TOKEN
-
           echo "🚀 Uploading code to Space..."
-          python -m huggingface_hub upload . \
-            --repo-type=space \
-            --repo-id=XavierCoulon/futurisys \
-            --commit-message "🚀 Auto-deploy from GitHub Actions (Docker build: ${{ env.TAG }})"
+          python -c "
+          from huggingface_hub import HfApi
+          import os
+
+          api = HfApi(token=os.environ['HF_TOKEN'])
+
+          # Upload all files to the space
+          api.upload_folder(
+              folder_path='.',
+              repo_id='XavierCoulon/futurisys',
+              repo_type='space',
+              commit_message='🚀 Auto-deploy from GitHub Actions',
+              ignore_patterns=['.git*', '__pycache__*', '*.pyc', '.pytest_cache*', 'node_modules*']
+          )
+          print('✅ Upload completed!')
+          "
 
           echo "✅ Deployment to Hugging Face Space completed!"
