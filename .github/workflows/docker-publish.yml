@@ -57,7 +57,7 @@ jobs:
           git config --global user.name "GitHub Actions"
 
           echo "🔗 Adding Hugging Face Space remote..."
-          git remote add space https://user:${HF_TOKEN}@huggingface.co/spaces/spino13/futurisys || true
+          git remote add space https://user:${HF_TOKEN}@huggingface.co/spaces/XavierCoulon/futurisys || true
 
           echo "📤 Pushing latest commit to HF Space..."
           git push --force space main
