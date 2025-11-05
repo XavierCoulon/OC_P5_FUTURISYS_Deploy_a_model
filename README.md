@@ -163,7 +163,8 @@ fastapi dev app/main.py
 
 ### Interface utilisateur (Gradio)
 
-L'interface web principale est accessible à la racine : http://localhost:8000/
+L'interface web principale est accessible à la racine en local : http://localhost:8000/
+Aussi accessible en production via Hugging Face Spaces : https://huggingface.co/spaces/XavierCoulon/futurisys
 
 ### API REST
 
