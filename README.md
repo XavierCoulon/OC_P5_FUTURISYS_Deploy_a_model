@@ -15,7 +15,7 @@ Application FastAPI pour le déploiement d'un modèle de Machine Learning avec i
 
 ## 🚀 Fonctionnalités
 
--   **🤖 Prédictions ML** - Modèle de prédiction de départ d'employés
+-   **🤖 Prédictions ML** - Modèle de prédiction de départ d'employés (entraîné lors du Projet 4 [ici](https://github.com/XavierCoulon/OC_P4_ESN_TechNova_Partners))
 -   **🚀 FastAPI** - API REST moderne et performante
 -   **🎨 Interface Gradio** - Interface web interactive intégrée
 -   **🗄️ Base de données PostgreSQL** - Stockage des données avec SQLAlchemy 2.0
@@ -72,7 +72,7 @@ erDiagram
         DOUBLE PRECISION threshold
         TIMESTAMP created_at
     }
-    prediction_outputs}||--||prediction_inputs :prediction_outputs_prediction_input_id_fkey
+    prediction_outputs ||--|| prediction_inputs :prediction_outputs_prediction_input_id_fkey
 ```
 
 ## 📁 Structure du projet
