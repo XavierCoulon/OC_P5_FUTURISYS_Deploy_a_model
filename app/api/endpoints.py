@@ -80,7 +80,7 @@ def get_erd_mermaid():
             referred = fk.get("referred_table")
             if referred:
                 rel_name = fk.get("name", "fk")
-                edge_line = "    " + table + "}o--||" + referred + " :" + rel_name  # type: ignore
+                edge_line = "    " + table + "}||--||" + referred + " :" + rel_name  # type: ignore
                 lines.append(edge_line)
 
     lines.append("```")
