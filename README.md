@@ -72,7 +72,7 @@ erDiagram
         DOUBLE PRECISION threshold
         TIMESTAMP created_at
     }
-    prediction_outputs}o--||prediction_inputs :prediction_outputs_prediction_input_id_fkey
+    prediction_outputs}||--||prediction_inputs :prediction_outputs_prediction_input_id_fkey
 ```
 
 ## 📁 Structure du projet
