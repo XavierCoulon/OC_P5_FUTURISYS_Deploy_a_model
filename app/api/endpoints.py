@@ -70,9 +70,9 @@ def get_erd_mermaid():
     for table in tables:
         lines.append(f"    {table} {{")
         for column in inspector.get_columns(table):
-            col_type = str(column["type"])
+            col_type = column["type"].__class__.__name__
             col_name = column["name"]
-            lines.append(f"        {col_type} {col_name}")
+            lines.append(f"        {col_name} {col_type}")
         lines.append("    }")
 
     for table in tables:
