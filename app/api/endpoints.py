@@ -6,6 +6,7 @@ from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 from app.core.database import engine, get_db
+from app.core.security import verify_api_key
 from app.schemas import (
     PredictionFullResponse,
     PredictionInputCreate,
@@ -94,15 +95,16 @@ def get_erd_mermaid():
     description=(
         "Crée une nouvelle entrée de données, applique le modèle de Machine Learning et "
         "retourne la prédiction correspondante.\n\n"
-        "L’entrée est enregistrée dans la base avec sa sortie associée (probabilité, seuil, résultat binaire)."
+        "L'entrée est enregistrée dans la base avec sa sortie associée (probabilité, seuil, résultat binaire)."
     ),
     response_model=PredictionFullResponse,
-    response_description="Objet combiné contenant l’entrée enregistrée et le résultat du modèle.",
+    response_description="Objet combiné contenant l'entrée enregistrée et le résultat du modèle.",
     status_code=status.HTTP_201_CREATED,
 )
 def create_prediction(
     payload: PredictionInputCreate,
     db: Session = Depends(get_db),
+    _: str = Depends(verify_api_key),
 ):
     return create_prediction_full_service(db, payload)
 
@@ -120,6 +122,7 @@ def list_predictions(
     skip: int = 0,
     limit: int = 10,
     matricule: str | None = None,
+    _: str = Depends(verify_api_key),
 ):
     """
     Liste les entrées de prédiction stockées, avec option de filtrage par matricule.
@@ -133,10 +136,14 @@ def list_predictions(
     summary="Obtenir une prédiction par ID",
     description="Récupère une entrée de prédiction précise grâce à son identifiant unique.",
     response_model=PredictionInputResponse,
-    response_description="Objet contenant les informations de l’entrée demandée.",
+    response_description="Objet contenant les informations de l'entrée demandée.",
     responses={404: {"description": "Prédiction introuvable"}},
 )
-def get_prediction(prediction_id: int, db: Session = Depends(get_db)):
+def get_prediction(
+    prediction_id: int,
+    db: Session = Depends(get_db),
+    _: str = Depends(verify_api_key),
+):
     """
     Récupère une entrée de prédiction par son ID.
     """
@@ -160,7 +167,11 @@ def get_prediction(prediction_id: int, db: Session = Depends(get_db)):
         404: {"description": "Prédiction introuvable"},
     },
 )
-def delete_prediction(prediction_id: int, db: Session = Depends(get_db)):
+def delete_prediction(
+    prediction_id: int,
+    db: Session = Depends(get_db),
+    _: str = Depends(verify_api_key),
+):
     """
     Supprime une entrée de prédiction par son ID.
     """

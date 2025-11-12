@@ -183,6 +183,16 @@ Les endpoints principaux sont préfixés par `/v1/` :
 -   **GET** `/v1/predictions/{id}` - Récupérer une prédiction par ID
 -   **DELETE** `/v1/predictions/{id}` - Supprimer une prédiction
 
+#### Authentification API
+
+Tous les endpoints de **prédiction** (`/predictions`, `/predictions/{id}`) nécessitent une clé API.
+
+**Méthode** : Passer la clé API via le header `X-API-Key`
+
+**Erreurs courantes** :
+
+-   `403 Forbidden` : Clé API manquante ou invalide
+
 #### Documentation automatique
 
 -   **Swagger UI** : http://localhost:8000/docs
@@ -190,10 +200,26 @@ Les endpoints principaux sont préfixés par `/v1/` :
 
 ### Exemple d'utilisation API
 
+#### Sans authentification (endpoints publics)
+
 ```bash
+# Vérifier l'état de l'API
+curl "http://localhost:8000/v1/health"
+
+# Récupérer le schéma ERD
+curl "http://localhost:8000/v1/erd"
+```
+
+#### Avec authentification (endpoints protégés)
+
+```bash
+# Définir votre clé API
+export API_KEY="your-secret-key-here"
+
 # Créer une prédiction
 curl -X POST "http://localhost:8000/v1/predictions" \
   -H "Content-Type: application/json" \
+  -H "X-API-Key: $API_KEY" \
   -d '{
     "age": 35,
     "genre": "M",
@@ -215,7 +241,7 @@ curl -X POST "http://localhost:8000/v1/predictions" \
     "nb_formations_suivies": 5,
     "distance_domicile_travail": 12.3,
     "niveau_education": 4,
-    "frequence_deplacement": "Occasionnel",
+    "frequence_deplacement": "Ocasionnel",
     "annees_depuis_la_derniere_promotion": 2,
     "annes_sous_responsable_actuel": 3,
     "departement": "Consulting",
@@ -228,7 +254,48 @@ curl -X POST "http://localhost:8000/v1/predictions" \
   }'
 
 # Lister les prédictions
-curl "http://localhost:8000/v1/predictions?skip=0&limit=10"
+curl -H "X-API-Key: $API_KEY" "http://localhost:8000/v1/predictions?skip=0&limit=10"
+
+# Récupérer une prédiction par ID
+curl -H "X-API-Key: $API_KEY" "http://localhost:8000/v1/predictions/1"
+
+# Supprimer une prédiction
+curl -X DELETE -H "X-API-Key: $API_KEY" "http://localhost:8000/v1/predictions/1"
+```
+
+#### Exemple Python
+
+```python
+import requests
+
+# Configuration
+API_KEY = "your-secret-key-here"
+BASE_URL = "http://localhost:8000/v1"
+headers = {"X-API-Key": API_KEY}
+
+# Créer une prédiction
+prediction_data = {
+    "age": 35,
+    "genre": "M",
+    "matricule": "M12345",
+    "revenu_mensuel": 3200.5,
+    # ... autres champs ...
+}
+
+response = requests.post(
+    f"{BASE_URL}/predictions",
+    json=prediction_data,
+    headers=headers
+)
+print(response.json())
+
+# Lister les prédictions
+response = requests.get(
+    f"{BASE_URL}/predictions",
+    headers=headers,
+    params={"skip": 0, "limit": 10}
+)
+print(response.json())
 ```
 
 ## ⚙️ Variables d'environnement
@@ -252,6 +319,7 @@ PORT=8000
 
 # Sécurité (changez en production)
 SECRET_KEY=your-secret-key-change-this-in-production
+API_KEY=api-key-for-production
 
 # Logging
 LOG_LEVEL=INFO
