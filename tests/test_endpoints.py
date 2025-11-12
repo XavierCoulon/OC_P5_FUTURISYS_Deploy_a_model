@@ -6,6 +6,91 @@ from app.schemas import PredictionInputCreate
 
 
 # =========================
+#      API KEY SECURITY
+# =========================
+class TestAPIKeySecurity:
+    """Tests pour la validation de la clé API."""
+
+    @pytest.mark.asyncio
+    async def test_post_predictions_without_api_key(self, sample_input):
+        """Vérifie que POST /predictions échoue sans API key."""
+        # Créer un client sans header API key
+        from fastapi import FastAPI
+        from httpx import ASGITransport, AsyncClient
+
+        app = FastAPI()
+        app.include_router(endpoints.api_router)
+
+        transport = ASGITransport(app=app)
+        async with AsyncClient(
+            transport=transport, base_url="http://testserver"
+        ) as client:
+            resp = await client.post("/predictions", json=sample_input)
+            assert resp.status_code == 403
+            data = resp.json()
+            assert (
+                "API key missing" in data["detail"]
+                or "Invalid API key" in data["detail"]
+            )
+
+    @pytest.mark.asyncio
+    async def test_get_predictions_without_api_key(self):
+        """Vérifie que GET /predictions échoue sans API key."""
+        from fastapi import FastAPI
+        from httpx import ASGITransport, AsyncClient
+
+        app = FastAPI()
+        app.include_router(endpoints.api_router)
+
+        transport = ASGITransport(app=app)
+        async with AsyncClient(
+            transport=transport, base_url="http://testserver"
+        ) as client:
+            resp = await client.get("/predictions")
+            assert resp.status_code == 403
+            data = resp.json()
+            assert (
+                "API key missing" in data["detail"]
+                or "Invalid API key" in data["detail"]
+            )
+
+    @pytest.mark.asyncio
+    async def test_post_predictions_with_invalid_api_key(self, sample_input):
+        """Vérifie que POST /predictions échoue avec une mauvaise API key."""
+        from fastapi import FastAPI
+        from httpx import ASGITransport, AsyncClient
+
+        app = FastAPI()
+        app.include_router(endpoints.api_router)
+
+        transport = ASGITransport(app=app)
+        headers = {"X-API-Key": "wrong-api-key-12345"}
+        async with AsyncClient(
+            transport=transport, base_url="http://testserver", headers=headers
+        ) as client:
+            resp = await client.post("/predictions", json=sample_input)
+            assert resp.status_code == 403
+            data = resp.json()
+            assert "Invalid API key" in data["detail"]
+
+    @pytest.mark.asyncio
+    async def test_health_check_without_api_key(self):
+        """Vérifie que le health check est accessible sans API key."""
+        from fastapi import FastAPI
+        from httpx import ASGITransport, AsyncClient
+
+        app = FastAPI()
+        app.include_router(endpoints.api_router)
+
+        transport = ASGITransport(app=app)
+        async with AsyncClient(
+            transport=transport, base_url="http://testserver"
+        ) as client:
+            resp = await client.get("/health")
+            assert resp.status_code == 200
+
+
+# =========================
 #        ROOT ENDPOINT
 # =========================
 class TestRootEndpoint:

@@ -10,6 +10,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.api.endpoints import api_router
 from app.core.database import Base, get_db
+from app.core.security import verify_api_key
 
 
 def is_running_in_docker() -> bool:
@@ -97,7 +98,7 @@ def db():
 @pytest_asyncio.fixture
 async def async_client(db):
     """
-    Client HTTP asynchrone avec DB de test isolée.
+    Client HTTP asynchrone avec DB de test isolée et authentification API key.
     """
     app = FastAPI()
     app.include_router(api_router)
@@ -109,10 +110,17 @@ async def async_client(db):
         finally:
             db.close()
 
+    # Override la vérification d'API key pour les tests
+    async def override_verify_api_key(api_key: str | None = None) -> str:
+        return api_key or "test-key"
+
     app.dependency_overrides[get_db] = override_get_db
+    app.dependency_overrides[verify_api_key] = override_verify_api_key
 
     transport = ASGITransport(app=app)
-    async with AsyncClient(transport=transport, base_url="http://testserver") as client:  # type: ignore
+    # Ajouter le header API key pour les tests
+    headers = {"X-API-Key": os.getenv("API_KEY", "default-key-change-me")}
+    async with AsyncClient(transport=transport, base_url="http://testserver", headers=headers) as client:  # type: ignore
         yield client
 
 
